@@ -321,13 +321,14 @@
     <div class="container">
         <div class="header">
             <h1>RotorFlight Gyro Filter Visualization</h1>
-            <p>Educational demonstration of digital filters used in flight controller gyro processing</p>
+            <p>Educational demonstration of digital filters used in helicopter flight controller gyro processing</p>
+            <p>Built by Adam Turner and based on RotorFlight firmware gyro signal processing code.</p>
         </div>
         
         <div class="content">
             <div class="info-box">
                 <h4>About This Visualization</h4>
-                <p>This interactive demonstration shows how different digital filters process gyro signals in RotorFlight firmware. 
+                <p>This interactive demonstration shows how different digital filters process gyro signals in RotorFlight helicopter firmware. 
                 Explore each filter type, adjust parameters in real-time, and see how they affect both time-domain and frequency-domain responses.</p>
             </div>
             
@@ -338,7 +339,7 @@
                 </div>
                 <div class="filter-content" id="pipeline">
                     <div class="filter-description">
-                        The gyro signal processing pipeline in RotorFlight applies multiple filters in sequence to clean and prepare the signal for PID control.
+                        The gyro signal processing pipeline in RotorFlight applies multiple filters in sequence to clean and prepare the signal for helicopter flight control.
                     </div>
                     
                     <div class="pipeline-visualization">
@@ -364,10 +365,10 @@
                         
                         <div class="pipeline-step">
                             <div class="pipeline-step-number">3</div>
-                            <div class="pipeline-step-content">
-                                <div class="pipeline-step-title">RPM Filter</div>
-                                <div class="pipeline-step-description">Dynamic notch filters based on motor RPM</div>
-                            </div>
+                                                     <div class="pipeline-step-content">
+                             <div class="pipeline-step-title">RPM Filter</div>
+                             <div class="pipeline-step-description">Dynamic notch filters based on main rotor RPM</div>
+                         </div>
                         </div>
                         
                         <div class="arrow">↓</div>
@@ -424,10 +425,10 @@
                         
                         <div class="pipeline-step">
                             <div class="pipeline-step-number">9</div>
-                            <div class="pipeline-step-content">
-                                <div class="pipeline-step-title">Filtered Output</div>
-                                <div class="pipeline-step-description">Clean signal ready for PID control</div>
-                            </div>
+                                                     <div class="pipeline-step-content">
+                             <div class="pipeline-step-title">Filtered Output</div>
+                             <div class="pipeline-step-description">Clean signal ready for helicopter flight control</div>
+                         </div>
                         </div>
                     </div>
                 </div>
@@ -496,14 +497,14 @@
                 </div>
                 <div class="filter-content" id="rpm">
                     <div class="filter-description">
-                        RPM filters are dynamic notch filters that automatically adjust their center frequency based on motor RPM. 
-                        They target motor-related vibrations that change with throttle.
+                        RPM filters are dynamic notch filters that automatically adjust their center frequency based on main rotor RPM. 
+                        They target rotor-related vibrations that change with throttle and collective pitch.
                     </div>
                     
                     <div class="math-formula">
                         <strong>RPM to Frequency Conversion:</strong><br>
                         f = RPM × ratio / 60<br>
-                        Where ratio is typically 1 for 2-blade props, 2 for 4-blade props
+                        Where ratio is typically 1 for 2-blade rotors, 2 for 4-blade rotors
                     </div>
                     
                     <div class="controls">
@@ -513,11 +514,11 @@
                             <span id="rpm-motor-rpm-value">4000 RPM</span>
                         </div>
                         <div class="control-group">
-                            <label for="rpm-ratio">Blade Ratio</label>
+                            <label for="rpm-ratio">Rotor Blade Ratio</label>
                             <select id="rpm-ratio">
-                                <option value="1">2-blade (1:1)</option>
-                                <option value="2">4-blade (2:1)</option>
-                                <option value="3">6-blade (3:1)</option>
+                                <option value="1">2-blade rotor (1:1)</option>
+                                <option value="2">4-blade rotor (2:1)</option>
+                                <option value="3">6-blade rotor (3:1)</option>
                             </select>
                         </div>
                         <div class="control-group">
@@ -542,11 +543,11 @@
                         <div class="plot-container">
                             <div class="plot-title">Time Domain Response</div>
                             <div class="plot-explanation">
-                                <strong>Input (Gray line):</strong> A sine wave at the motor frequency plus noise, 
+                                <strong>Input (Gray line):</strong> A sine wave at the rotor frequency plus noise, 
                                 simulating the vibration that would be picked up by the gyro.<br><br>
-                                <strong>Output (Blue line):</strong> The filtered signal. Notice how the motor vibration 
+                                <strong>Output (Blue line):</strong> The filtered signal. Notice how the rotor vibration 
                                 (the main sine wave component) is significantly reduced, while the noise is mostly preserved. 
-                                This is exactly what we want - remove motor vibrations but keep the actual flight control signals.
+                                This is exactly what we want - remove rotor vibrations but keep the actual flight control signals.
                             </div>
                             <div id="rpm-time-plot"></div>
                         </div>
@@ -611,9 +612,9 @@
                              <div class="plot-container">
                                  <div class="plot-title">LPF1 Step Response</div>
                                  <div class="plot-explanation">
-                                     <strong>Step Response:</strong> Shows how quickly the filter responds to sudden changes. 
-                                     PT1 filters respond quickly but with some overshoot. Higher order filters (PT2, PT3) 
-                                     provide more smoothing but introduce more delay, which can make the aircraft feel less responsive.
+                                                                     <strong>Step Response:</strong> Shows how quickly the filter responds to sudden changes. 
+                                PT1 filters respond quickly but with some overshoot. Higher order filters (PT2, PT3) 
+                                provide more smoothing but introduce more delay, which can make the helicopter feel less responsive.
                                  </div>
                                  <div id="lpf1-step-plot"></div>
                              </div>
@@ -666,9 +667,9 @@
                              <div class="comparison-plot">
                                  <div class="plot-title">Step Response Comparison</div>
                                  <div class="plot-explanation">
-                                     <strong>Cascaded Step Response:</strong> Shows how the combined filters respond to sudden changes. 
-                                     Notice the increased delay and smoothing compared to a single filter. This is the trade-off 
-                                     between noise reduction and responsiveness in the control system.
+                                                                     <strong>Cascaded Step Response:</strong> Shows how the combined filters respond to sudden changes. 
+                                Notice the increased delay and smoothing compared to a single filter. This is the trade-off 
+                                between noise reduction and responsiveness in the helicopter control system.
                                  </div>
                                  <div id="lpf-comparison-step-plot"></div>
                              </div>
@@ -688,9 +689,9 @@
                          known sources of vibration or interference at fixed frequencies. Unlike dynamic notch filters, these have 
                          fixed center frequencies and are typically used to remove:
                          <ul>
-                             <li><strong>Motor vibrations:</strong> Fixed frequency vibrations from specific motor/prop combinations</li>
-                             <li><strong>Frame resonances:</strong> Natural vibration frequencies of the aircraft frame</li>
-                             <li><strong>Electrical interference:</strong> Noise from ESCs, cameras, or other electronics</li>
+                             <li><strong>Rotor vibrations:</strong> Fixed frequency vibrations from specific motor/rotor combinations</li>
+                             <li><strong>Frame resonances:</strong> Natural vibration frequencies of the helicopter frame</li>
+                             <li><strong>Electrical interference:</strong> Noise from ESCs, servos, or other electronics</li>
                          </ul>
                          The Q value determines how narrow and deep the notch is - higher Q means a narrower, deeper notch.
                      </div>
@@ -796,8 +797,8 @@
                          Dynamic notch filters use FFT analysis to automatically detect and filter out dominant frequency components 
                          in the gyro signal. They adapt in real-time to changing vibration patterns. This is particularly useful for:
                          <ul>
-                             <li><strong>Variable RPM motors:</strong> As throttle changes, motor vibration frequencies change</li>
-                             <li><strong>Flight conditions:</strong> Different flight modes may introduce different vibration patterns</li>
+                             <li><strong>Variable RPM rotors:</strong> As throttle and collective pitch change, rotor vibration frequencies change</li>
+                             <li><strong>Flight conditions:</strong> Different flight modes (hover, forward flight, aerobatics) may introduce different vibration patterns</li>
                              <li><strong>Automatic tuning:</strong> No manual frequency setting required</li>
                          </ul>
                          The system continuously analyzes the gyro signal, finds the strongest frequency components, and places notch filters at those frequencies.
@@ -869,12 +870,12 @@
                          affects the signal. This demonstrates the cumulative effect of all filters working together:
                          <ul>
                              <li><strong>Decimation:</strong> Reduces sample rate and prevents aliasing</li>
-                             <li><strong>RPM Filter:</strong> Removes motor-related vibrations</li>
+                             <li><strong>RPM Filter:</strong> Removes rotor-related vibrations</li>
                              <li><strong>Low-Pass Filters:</strong> Remove high-frequency noise</li>
                              <li><strong>Notch Filters:</strong> Remove specific interference frequencies</li>
                              <li><strong>Dynamic Notch:</strong> Adaptively removes changing vibration patterns</li>
                          </ul>
-                         The result is a clean signal ready for PID control.
+                         The result is a clean signal ready for helicopter flight control.
                      </div>
                     
                     <div class="signal-selector">
@@ -905,7 +906,7 @@
                                  <strong>Input Signal (Gray):</strong> The raw gyro signal with noise and vibrations.<br><br>
                                  <strong>Output Signal (Blue):</strong> The signal after passing through all filter stages. 
                                  Notice how the noise and unwanted vibrations are significantly reduced while preserving 
-                                 the important control signals.
+                                 the important helicopter control signals.
                              </div>
                              <div id="pipeline-time-plot"></div>
                          </div>
@@ -916,7 +917,7 @@
                                  noise across all frequencies and peaks at vibration frequencies.<br><br>
                                  <strong>Output Spectrum (Blue):</strong> Frequency content after filtering. Notice how 
                                  high frequencies are reduced and vibration peaks are attenuated, leaving a cleaner 
-                                 signal for the control system.
+                                 signal for the helicopter control system.
                              </div>
                              <div id="pipeline-freq-plot"></div>
                          </div>

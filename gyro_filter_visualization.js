@@ -275,15 +275,15 @@ function generateChirp(length, startFreq, endFreq, sampleRate) {
 function generateRealisticGyroData(length, sampleRate) {
     const signal = [];
     const baseFreq = 50;
-    const motorFreq = 120;
+    const rotorFreq = 120;
     const noiseLevel = 0.1;
     
     for (let i = 0; i < length; i++) {
         const t = i / sampleRate;
         const baseSignal = Math.sin(2 * Math.PI * baseFreq * t);
-        const motorSignal = 0.3 * Math.sin(2 * Math.PI * motorFreq * t);
+        const rotorSignal = 0.3 * Math.sin(2 * Math.PI * rotorFreq * t);
         const noise = (Math.random() - 0.5) * 2 * noiseLevel;
-        signal.push(baseSignal + motorSignal + noise);
+        signal.push(baseSignal + rotorSignal + noise);
     }
     return signal;
 }
@@ -428,11 +428,11 @@ function updateRpmPlots() {
     const freqData = calculateFrequencyResponse('NOTCH', frequency, sampleRate, q);
     createFrequencyResponsePlot('rpm-freq-plot', freqData, `RPM Filter Frequency Response (${frequency.toFixed(1)} Hz)`);
     
-    // Time response with motor vibration
+    // Time response with rotor vibration
     const time = Array.from({length: 1000}, (_, i) => i / sampleRate);
-    const motorSignal = generateSineWave(1000, frequency, sampleRate, 1);
+    const rotorSignal = generateSineWave(1000, frequency, sampleRate, 1);
     const noise = generateWhiteNoise(1000, 0.2);
-    const input = motorSignal.map((val, i) => val + noise[i]);
+    const input = rotorSignal.map((val, i) => val + noise[i]);
     
     const filter = new BiquadFilter();
     filter.init(frequency, sampleRate, q, 'NOTCH');
