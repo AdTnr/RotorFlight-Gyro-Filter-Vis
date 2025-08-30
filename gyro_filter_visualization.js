@@ -290,12 +290,6 @@ function generateRealisticGyroData(length, sampleRate) {
 
 // Plotting functions
 function createFrequencyResponsePlot(containerId, data, title) {
-    // Clear existing plot first
-    const container = document.getElementById(containerId);
-    if (container) {
-        container.innerHTML = '';
-    }
-    
     const trace1 = {
         x: data.frequencies,
         y: data.magnitudes,
@@ -332,16 +326,18 @@ function createFrequencyResponsePlot(containerId, data, title) {
         displayModeBar: false
     };
     
-    Plotly.newPlot(containerId, [trace1, trace2], layout, config);
+    // Check if plot already exists
+    const container = document.getElementById(containerId);
+    if (container && container.data) {
+        // Update existing plot
+        Plotly.react(containerId, [trace1, trace2], layout, config);
+    } else {
+        // Create new plot
+        Plotly.newPlot(containerId, [trace1, trace2], layout, config);
+    }
 }
 
 function createTimeResponsePlot(containerId, time, input, output, title) {
-    // Clear existing plot first
-    const container = document.getElementById(containerId);
-    if (container) {
-        container.innerHTML = '';
-    }
-    
     const trace1 = {
         x: time,
         y: input,
@@ -376,7 +372,15 @@ function createTimeResponsePlot(containerId, time, input, output, title) {
         displayModeBar: false
     };
     
-    Plotly.newPlot(containerId, [trace1, trace2], layout, config);
+    // Check if plot already exists
+    const container = document.getElementById(containerId);
+    if (container && container.data) {
+        // Update existing plot
+        Plotly.react(containerId, [trace1, trace2], layout, config);
+    } else {
+        // Create new plot
+        Plotly.newPlot(containerId, [trace1, trace2], layout, config);
+    }
 }
 
 // Filter update functions
@@ -630,7 +634,13 @@ function updateDynNotchPlots() {
         margin: { l: 50, r: 50, t: 50, b: 50 }
     };
     
-    Plotly.newPlot('dyn-notch-fft-plot', [trace1, trace2], layout);
+    // Check if plot already exists
+    const container = document.getElementById('dyn-notch-fft-plot');
+    if (container && container.data) {
+        Plotly.react('dyn-notch-fft-plot', [trace1, trace2], layout);
+    } else {
+        Plotly.newPlot('dyn-notch-fft-plot', [trace1, trace2], layout);
+    }
     
     // Dynamic notch frequency response
     let combinedMagnitudes = new Array(frequencies.length).fill(0);
@@ -766,7 +776,13 @@ function updatePipelinePlots() {
         margin: { l: 50, r: 50, t: 50, b: 50 }
     };
     
-    Plotly.newPlot('pipeline-freq-plot', [trace1, trace2], layout);
+    // Check if plot already exists
+    const freqContainer = document.getElementById('pipeline-freq-plot');
+    if (freqContainer && freqContainer.data) {
+        Plotly.react('pipeline-freq-plot', [trace1, trace2], layout);
+    } else {
+        Plotly.newPlot('pipeline-freq-plot', [trace1, trace2], layout);
+    }
     
     // Before vs After comparison
     createTimeResponsePlot('pipeline-comparison-plot', time, inputSignal, output, 'Before vs After Filtering');
@@ -790,7 +806,13 @@ function updatePipelinePlots() {
         margin: { l: 50, r: 50, t: 50, b: 50 }
     };
     
-    Plotly.newPlot('pipeline-stages-plot', [trace3], layout2);
+    // Check if plot already exists
+    const stagesContainer = document.getElementById('pipeline-stages-plot');
+    if (stagesContainer && stagesContainer.data) {
+        Plotly.react('pipeline-stages-plot', [trace3], layout2);
+    } else {
+        Plotly.newPlot('pipeline-stages-plot', [trace3], layout2);
+    }
 }
 
 // FFT calculation helper
