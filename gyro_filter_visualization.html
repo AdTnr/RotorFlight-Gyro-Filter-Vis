@@ -145,6 +145,16 @@
             text-align: center;
         }
         
+        .plot-explanation {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+            color: #6c757d;
+            border-left: 3px solid #667eea;
+        }
+        
         .math-formula {
             background: #f8f9fa;
             padding: 15px;
@@ -456,10 +466,23 @@
                     <div class="plots-container">
                         <div class="plot-container">
                             <div class="plot-title">Frequency Response</div>
+                            <div class="plot-explanation">
+                                <strong>Magnitude (Blue line):</strong> Shows how much the filter attenuates different frequencies. 
+                                Frequencies below the cutoff pass through with minimal loss, while higher frequencies are reduced. 
+                                The -3dB point indicates the cutoff frequency where the signal is reduced to 70.7% of its original amplitude.<br><br>
+                                <strong>Phase (Red line):</strong> Shows how the filter delays different frequencies. 
+                                Phase is measured in degrees - a 180° phase shift means the signal is inverted, 
+                                while 90° means it's delayed by a quarter cycle. Linear phase response is important for preserving signal shape.
+                            </div>
                             <div id="decimation-freq-plot"></div>
                         </div>
                         <div class="plot-container">
                             <div class="plot-title">Step Response</div>
+                            <div class="plot-explanation">
+                                <strong>Input (Gray line):</strong> A sudden step from 0 to 1, simulating an instantaneous change in the gyro signal.<br><br>
+                                <strong>Output (Blue line):</strong> How the filter responds to the step. The Bessel filter shows a smooth, 
+                                gradual rise without overshoot, which is ideal for preventing ringing and oscillations in the control system.
+                            </div>
                             <div id="decimation-step-plot"></div>
                         </div>
                     </div>
@@ -507,10 +530,24 @@
                     <div class="plots-container">
                         <div class="plot-container">
                             <div class="plot-title">Frequency Response</div>
+                            <div class="plot-explanation">
+                                <strong>Notch Filter:</strong> This filter creates a deep "notch" at the motor frequency, 
+                                dramatically reducing signals at that specific frequency while leaving other frequencies mostly unchanged.<br><br>
+                                <strong>Center Frequency:</strong> The frequency where the notch is deepest (calculated from RPM). 
+                                Higher Q values create a narrower, deeper notch.<br><br>
+                                <strong>Bandwidth:</strong> The width of the notch - how many frequencies around the center are affected.
+                            </div>
                             <div id="rpm-freq-plot"></div>
                         </div>
                         <div class="plot-container">
                             <div class="plot-title">Time Domain Response</div>
+                            <div class="plot-explanation">
+                                <strong>Input (Gray line):</strong> A sine wave at the motor frequency plus noise, 
+                                simulating the vibration that would be picked up by the gyro.<br><br>
+                                <strong>Output (Blue line):</strong> The filtered signal. Notice how the motor vibration 
+                                (the main sine wave component) is significantly reduced, while the noise is mostly preserved. 
+                                This is exactly what we want - remove motor vibrations but keep the actual flight control signals.
+                            </div>
                             <div id="rpm-time-plot"></div>
                         </div>
                     </div>
@@ -523,10 +560,16 @@
                     <h2>📉 Low-Pass Filters (LPF1 & LPF2)</h2>
                 </div>
                 <div class="filter-content" id="lowpass">
-                    <div class="filter-description">
-                        Low-pass filters remove high-frequency noise from the gyro signal. RotorFlight supports multiple filter types 
-                        including PT1, PT2, PT3, Butterworth, Bessel, and Damped filters.
-                    </div>
+                                         <div class="filter-description">
+                         Low-pass filters remove high-frequency noise from the gyro signal. RotorFlight supports multiple filter types 
+                         including PT1, PT2, PT3, Butterworth, Bessel, and Damped filters. Each has different characteristics:
+                         <ul>
+                             <li><strong>PT1/PT2/PT3:</strong> Simple filters with increasing order. Higher orders provide more attenuation but more phase delay.</li>
+                             <li><strong>Butterworth:</strong> Maximally flat frequency response in the passband, good for general noise reduction.</li>
+                             <li><strong>Bessel:</strong> Linear phase response, preserves signal shape better but less attenuation.</li>
+                             <li><strong>Damped:</strong> Critically damped response, good compromise between attenuation and phase delay.</li>
+                         </ul>
+                     </div>
                     
                     <div class="tabs">
                         <button class="tab active" onclick="switchTab('lpf1')">LPF1 (Primary)</button>
@@ -554,16 +597,27 @@
                             </div>
                         </div>
                         
-                        <div class="plots-container">
-                            <div class="plot-container">
-                                <div class="plot-title">LPF1 Frequency Response</div>
-                                <div id="lpf1-freq-plot"></div>
-                            </div>
-                            <div class="plot-container">
-                                <div class="plot-title">LPF1 Step Response</div>
-                                <div id="lpf1-step-plot"></div>
-                            </div>
-                        </div>
+                                                 <div class="plots-container">
+                             <div class="plot-container">
+                                 <div class="plot-title">LPF1 Frequency Response</div>
+                                 <div class="plot-explanation">
+                                     <strong>Magnitude Response:</strong> Shows how much each frequency is attenuated. 
+                                     Lower frequencies (left side) pass through with minimal loss, while higher frequencies (right side) are reduced.<br><br>
+                                     <strong>Phase Response:</strong> Shows the phase delay introduced by the filter. 
+                                     More aggressive filters (higher order) introduce more phase delay, which can affect control system performance.
+                                 </div>
+                                 <div id="lpf1-freq-plot"></div>
+                             </div>
+                             <div class="plot-container">
+                                 <div class="plot-title">LPF1 Step Response</div>
+                                 <div class="plot-explanation">
+                                     <strong>Step Response:</strong> Shows how quickly the filter responds to sudden changes. 
+                                     PT1 filters respond quickly but with some overshoot. Higher order filters (PT2, PT3) 
+                                     provide more smoothing but introduce more delay, which can make the aircraft feel less responsive.
+                                 </div>
+                                 <div id="lpf1-step-plot"></div>
+                             </div>
+                         </div>
                     </div>
                     
                     <div class="tab-content" id="lpf2">
@@ -598,18 +652,28 @@
                         </div>
                     </div>
                     
-                    <div class="tab-content" id="comparison">
-                        <div class="comparison-container">
-                            <div class="comparison-plot">
-                                <div class="plot-title">Frequency Response Comparison</div>
-                                <div id="lpf-comparison-freq-plot"></div>
-                            </div>
-                            <div class="comparison-plot">
-                                <div class="plot-title">Step Response Comparison</div>
-                                <div id="lpf-comparison-step-plot"></div>
-                            </div>
-                        </div>
-                    </div>
+                                         <div class="tab-content" id="comparison">
+                         <div class="comparison-container">
+                             <div class="comparison-plot">
+                                 <div class="plot-title">Frequency Response Comparison</div>
+                                 <div class="plot-explanation">
+                                     <strong>Cascaded Response:</strong> Shows the combined effect of LPF1 and LPF2 in series. 
+                                     The total attenuation is the sum of both filters' responses. This demonstrates how multiple 
+                                     filters work together to provide more aggressive noise reduction.
+                                 </div>
+                                 <div id="lpf-comparison-freq-plot"></div>
+                             </div>
+                             <div class="comparison-plot">
+                                 <div class="plot-title">Step Response Comparison</div>
+                                 <div class="plot-explanation">
+                                     <strong>Cascaded Step Response:</strong> Shows how the combined filters respond to sudden changes. 
+                                     Notice the increased delay and smoothing compared to a single filter. This is the trade-off 
+                                     between noise reduction and responsiveness in the control system.
+                                 </div>
+                                 <div id="lpf-comparison-step-plot"></div>
+                             </div>
+                         </div>
+                     </div>
                 </div>
             </div>
             
@@ -619,10 +683,17 @@
                     <h2>🔽 Static Notch Filters</h2>
                 </div>
                 <div class="filter-content" id="notch">
-                    <div class="filter-description">
-                        Static notch filters remove specific frequency components from the signal. They are useful for eliminating 
-                        known sources of vibration or interference at fixed frequencies.
-                    </div>
+                                         <div class="filter-description">
+                         Static notch filters remove specific frequency components from the signal. They are useful for eliminating 
+                         known sources of vibration or interference at fixed frequencies. Unlike dynamic notch filters, these have 
+                         fixed center frequencies and are typically used to remove:
+                         <ul>
+                             <li><strong>Motor vibrations:</strong> Fixed frequency vibrations from specific motor/prop combinations</li>
+                             <li><strong>Frame resonances:</strong> Natural vibration frequencies of the aircraft frame</li>
+                             <li><strong>Electrical interference:</strong> Noise from ESCs, cameras, or other electronics</li>
+                         </ul>
+                         The Q value determines how narrow and deep the notch is - higher Q means a narrower, deeper notch.
+                     </div>
                     
                     <div class="math-formula">
                         <strong>Notch Filter Transfer Function:</strong><br>
@@ -650,16 +721,28 @@
                             </div>
                         </div>
                         
-                        <div class="plots-container">
-                            <div class="plot-container">
-                                <div class="plot-title">Notch 1 Frequency Response</div>
-                                <div id="notch1-freq-plot"></div>
-                            </div>
-                            <div class="plot-container">
-                                <div class="plot-title">Notch 1 Time Response</div>
-                                <div id="notch1-time-plot"></div>
-                            </div>
-                        </div>
+                                                 <div class="plots-container">
+                             <div class="plot-container">
+                                 <div class="plot-title">Notch 1 Frequency Response</div>
+                                 <div class="plot-explanation">
+                                     <strong>Notch Filter Response:</strong> Shows a deep "notch" at the center frequency where 
+                                     the filter dramatically reduces the signal. The width of the notch is determined by the Q value.<br><br>
+                                     <strong>Phase Response:</strong> Shows the phase shift around the notch frequency. 
+                                     Notch filters introduce significant phase changes near their center frequency, which can affect control performance.
+                                 </div>
+                                 <div id="notch1-freq-plot"></div>
+                             </div>
+                             <div class="plot-container">
+                                 <div class="plot-title">Notch 1 Time Response</div>
+                                 <div class="plot-explanation">
+                                     <strong>Input Signal:</strong> A sine wave at the notch center frequency, simulating a vibration 
+                                     that needs to be removed.<br><br>
+                                     <strong>Output Signal:</strong> The filtered result. Notice how the main frequency component 
+                                     is significantly reduced, demonstrating the notch filter's ability to remove specific unwanted frequencies.
+                                 </div>
+                                 <div id="notch1-time-plot"></div>
+                             </div>
+                         </div>
                     </div>
                     
                     <div class="tab-content" id="notch2">
@@ -709,10 +792,16 @@
                     <h2>📊 Dynamic Notch Filter (FFT-based)</h2>
                 </div>
                 <div class="filter-content" id="dyn-notch">
-                    <div class="filter-description">
-                        Dynamic notch filters use FFT analysis to automatically detect and filter out dominant frequency components 
-                        in the gyro signal. They adapt in real-time to changing vibration patterns.
-                    </div>
+                                         <div class="filter-description">
+                         Dynamic notch filters use FFT analysis to automatically detect and filter out dominant frequency components 
+                         in the gyro signal. They adapt in real-time to changing vibration patterns. This is particularly useful for:
+                         <ul>
+                             <li><strong>Variable RPM motors:</strong> As throttle changes, motor vibration frequencies change</li>
+                             <li><strong>Flight conditions:</strong> Different flight modes may introduce different vibration patterns</li>
+                             <li><strong>Automatic tuning:</strong> No manual frequency setting required</li>
+                         </ul>
+                         The system continuously analyzes the gyro signal, finds the strongest frequency components, and places notch filters at those frequencies.
+                     </div>
                     
                     <div class="math-formula">
                         <strong>SDFT (Sliding Discrete Fourier Transform):</strong><br>
@@ -743,16 +832,29 @@
                         </div>
                     </div>
                     
-                    <div class="plots-container">
-                        <div class="plot-container">
-                            <div class="plot-title">FFT Spectrum & Detected Peaks</div>
-                            <div id="dyn-notch-fft-plot"></div>
-                        </div>
-                        <div class="plot-container">
-                            <div class="plot-title">Dynamic Notch Frequency Response</div>
-                            <div id="dyn-notch-freq-plot"></div>
-                        </div>
-                    </div>
+                                         <div class="plots-container">
+                         <div class="plot-container">
+                             <div class="plot-title">FFT Spectrum & Detected Peaks</div>
+                             <div class="plot-explanation">
+                                 <strong>FFT Spectrum (Blue line):</strong> Shows the frequency content of the gyro signal. 
+                                 Peaks in this spectrum indicate dominant vibration frequencies that need to be filtered.<br><br>
+                                 <strong>Detected Peaks (Red dots):</strong> The system automatically identifies the strongest 
+                                 frequency components and marks them for notch filter placement. These are the frequencies 
+                                 that will be targeted by the dynamic notch filters.
+                             </div>
+                             <div id="dyn-notch-fft-plot"></div>
+                         </div>
+                         <div class="plot-container">
+                             <div class="plot-title">Dynamic Notch Frequency Response</div>
+                             <div class="plot-explanation">
+                                 <strong>Combined Notch Response:</strong> Shows the combined effect of all dynamic notch filters. 
+                                 Each detected peak gets its own notch filter, and their responses are combined.<br><br>
+                                 <strong>Adaptive Filtering:</strong> As the gyro signal changes, the FFT analysis updates, 
+                                 and the notch filters automatically adjust to target the new dominant frequencies.
+                             </div>
+                             <div id="dyn-notch-freq-plot"></div>
+                         </div>
+                     </div>
                 </div>
             </div>
             
@@ -762,10 +864,18 @@
                     <h2>🔄 Complete Pipeline Simulation</h2>
                 </div>
                 <div class="filter-content" id="pipeline-sim">
-                    <div class="filter-description">
-                        Simulate the complete gyro filtering pipeline with realistic input signals and see how each filter stage 
-                        affects the signal.
-                    </div>
+                                         <div class="filter-description">
+                         Simulate the complete gyro filtering pipeline with realistic input signals and see how each filter stage 
+                         affects the signal. This demonstrates the cumulative effect of all filters working together:
+                         <ul>
+                             <li><strong>Decimation:</strong> Reduces sample rate and prevents aliasing</li>
+                             <li><strong>RPM Filter:</strong> Removes motor-related vibrations</li>
+                             <li><strong>Low-Pass Filters:</strong> Remove high-frequency noise</li>
+                             <li><strong>Notch Filters:</strong> Remove specific interference frequencies</li>
+                             <li><strong>Dynamic Notch:</strong> Adaptively removes changing vibration patterns</li>
+                         </ul>
+                         The result is a clean signal ready for PID control.
+                     </div>
                     
                     <div class="signal-selector">
                         <button class="signal-btn active" onclick="setInputSignal('noise')">White Noise</button>
@@ -788,16 +898,29 @@
                         </div>
                     </div>
                     
-                    <div class="plots-container">
-                        <div class="plot-container">
-                            <div class="plot-title">Pipeline Time Domain Response</div>
-                            <div id="pipeline-time-plot"></div>
-                        </div>
-                        <div class="plot-container">
-                            <div class="plot-title">Pipeline Frequency Response</div>
-                            <div id="pipeline-freq-plot"></div>
-                        </div>
-                    </div>
+                                         <div class="plots-container">
+                         <div class="plot-container">
+                             <div class="plot-title">Pipeline Time Domain Response</div>
+                             <div class="plot-explanation">
+                                 <strong>Input Signal (Gray):</strong> The raw gyro signal with noise and vibrations.<br><br>
+                                 <strong>Output Signal (Blue):</strong> The signal after passing through all filter stages. 
+                                 Notice how the noise and unwanted vibrations are significantly reduced while preserving 
+                                 the important control signals.
+                             </div>
+                             <div id="pipeline-time-plot"></div>
+                         </div>
+                         <div class="plot-container">
+                             <div class="plot-title">Pipeline Frequency Response</div>
+                             <div class="plot-explanation">
+                                 <strong>Input Spectrum (Gray):</strong> Frequency content of the raw signal, showing 
+                                 noise across all frequencies and peaks at vibration frequencies.<br><br>
+                                 <strong>Output Spectrum (Blue):</strong> Frequency content after filtering. Notice how 
+                                 high frequencies are reduced and vibration peaks are attenuated, leaving a cleaner 
+                                 signal for the control system.
+                             </div>
+                             <div id="pipeline-freq-plot"></div>
+                         </div>
+                     </div>
                     
                     <div class="comparison-container">
                         <div class="comparison-plot">

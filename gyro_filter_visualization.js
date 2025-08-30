@@ -290,6 +290,12 @@ function generateRealisticGyroData(length, sampleRate) {
 
 // Plotting functions
 function createFrequencyResponsePlot(containerId, data, title) {
+    // Clear existing plot first
+    const container = document.getElementById(containerId);
+    if (container) {
+        container.innerHTML = '';
+    }
+    
     const trace1 = {
         x: data.frequencies,
         y: data.magnitudes,
@@ -316,13 +322,26 @@ function createFrequencyResponsePlot(containerId, data, title) {
         yaxis2: { title: 'Phase (degrees)', side: 'right', overlaying: 'y' },
         showlegend: true,
         legend: { x: 0.1, y: 0.9 },
-        margin: { l: 50, r: 50, t: 50, b: 50 }
+        margin: { l: 50, r: 50, t: 50, b: 50 },
+        autosize: true,
+        height: 350
     };
     
-    Plotly.newPlot(containerId, [trace1, trace2], layout);
+    const config = {
+        responsive: true,
+        displayModeBar: false
+    };
+    
+    Plotly.newPlot(containerId, [trace1, trace2], layout, config);
 }
 
 function createTimeResponsePlot(containerId, time, input, output, title) {
+    // Clear existing plot first
+    const container = document.getElementById(containerId);
+    if (container) {
+        container.innerHTML = '';
+    }
+    
     const trace1 = {
         x: time,
         y: input,
@@ -347,10 +366,17 @@ function createTimeResponsePlot(containerId, time, input, output, title) {
         yaxis: { title: 'Amplitude' },
         showlegend: true,
         legend: { x: 0.1, y: 0.9 },
-        margin: { l: 50, r: 50, t: 50, b: 50 }
+        margin: { l: 50, r: 50, t: 50, b: 50 },
+        autosize: true,
+        height: 350
     };
     
-    Plotly.newPlot(containerId, [trace1, trace2], layout);
+    const config = {
+        responsive: true,
+        displayModeBar: false
+    };
+    
+    Plotly.newPlot(containerId, [trace1, trace2], layout, config);
 }
 
 // Filter update functions
