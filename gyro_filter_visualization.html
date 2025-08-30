@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RotorFlight Gyro Filter Visualization</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
+    <script src="gyro_filter_visualization.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+        
+        .header p {
+            margin: 10px 0 0 0;
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .filter-section {
+            margin-bottom: 40px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .filter-header {
+            background: #f8f9fa;
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .filter-header:hover {
+            background: #e9ecef;
+        }
+        
+        .filter-header h2 {
+            margin: 0;
+            color: #495057;
+            font-size: 1.5em;
+        }
+        
+        .filter-content {
+            padding: 20px;
+            display: none;
+        }
+        
+        .filter-content.active {
+            display: block;
+        }
+        
+        .filter-description {
+            margin-bottom: 20px;
+            line-height: 1.6;
+            color: #6c757d;
+        }
+        
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .control-group label {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #495057;
+        }
+        
+        .control-group input, .control-group select {
+            padding: 8px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .control-group input:focus, .control-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+        }
+        
+        .plots-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .plot-container {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 15px;
+            min-height: 400px;
+        }
+        
+        .plot-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #495057;
+            text-align: center;
+        }
+        
+        .math-formula {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            border-left: 4px solid #667eea;
+        }
+        
+        .pipeline-visualization {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+        
+        .pipeline-step {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 4px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .pipeline-step-number {
+            background: #667eea;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+        }
+        
+        .pipeline-step-content {
+            flex: 1;
+        }
+        
+        .pipeline-step-title {
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .pipeline-step-description {
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+        
+        .arrow {
+            color: #667eea;
+            font-size: 1.5em;
+            margin: 0 10px;
+        }
+        
+        .comparison-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .comparison-plot {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 15px;
+            min-height: 350px;
+        }
+        
+        .signal-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .signal-btn {
+            padding: 8px 16px;
+            border: 1px solid #ced4da;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .signal-btn:hover {
+            background: #e9ecef;
+        }
+        
+        .signal-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #e0e0e0;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            padding: 12px 20px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .tab:hover {
+            background: #f8f9fa;
+        }
+        
+        .tab.active {
+            border-bottom-color: #667eea;
+            color: #667eea;
+            font-weight: 600;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .info-box {
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .info-box h4 {
+            margin: 0 0 10px 0;
+            color: #1976d2;
+        }
+        
+        .info-box p {
+            margin: 0;
+            color: #1565c0;
+        }
+        
+        @media (max-width: 768px) {
+            .plots-container, .comparison-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>RotorFlight Gyro Filter Visualization</h1>
+            <p>Educational demonstration of digital filters used in flight controller gyro processing</p>
+        </div>
+        
+        <div class="content">
+            <div class="info-box">
+                <h4>About This Visualization</h4>
+                <p>This interactive demonstration shows how different digital filters process gyro signals in RotorFlight firmware. 
+                Explore each filter type, adjust parameters in real-time, and see how they affect both time-domain and frequency-domain responses.</p>
+            </div>
+            
+            <!-- Filter Pipeline Overview -->
+            <div class="filter-section">
+                <div class="filter-header" onclick="toggleSection('pipeline')">
+                    <h2>📊 Gyro Filter Pipeline Overview</h2>
+                </div>
+                <div class="filter-content" id="pipeline">
+                    <div class="filter-description">
+                        The gyro signal processing pipeline in RotorFlight applies multiple filters in sequence to clean and prepare the signal for PID control.
+                    </div>
+                    
+                    <div class="pipeline-visualization">
+                        <div class="pipeline-step">
+                            <div class="pipeline-step-number">1</div>
+                            <div class="pipeline-step-content">
+                                <div class="pipeline-step-title">Raw Gyro Data</div>
+                                <div class="pipeline-step-description">Unfiltered, scaled gyro output from sensor</div>
+                            </div>
+                        </div>
+                        
+                        <div class="arrow">↓</div>
+                        
+                        <div class="pipeline-step">
+                            <div class="pipeline-step-number">2</div>
+                            <div class="pipeline-step-content">
+                                <div class="pipeline-step-title">Decimation Filter</div>
+                                <div class="pipeline-step-description">Bessel 4th order filter for downsampling</div>
+                            </div>
+                        </div>
+                        
+                        <div class="arrow">↓</div>
+                        
+                        <div class="pipeline-step">
+                            <div class="pipeline-step-number">3</div>
+                            <div class="pipeline-step-content">
+                                <div class="pipeline-step-title">RPM Filter</div>
+                                <div class="pipeline-step-description">Dynamic notch filters based on motor RPM</div>
+                            </div>
+                        </div>
+                        
+                        <div class="arrow">↓</div>
+                        
+                        <div class="pipeline-step">
+                            <div class="pipeline-step-number">4</div>
+                            <div class="pipeline-step-content">
+                                <div class="pipeline-step-title">Low-Pass Filter 1</div>
+                                <div class="pipeline-step-description">Primary low-pass filtering (PT1, PT2, PT3, Butterworth, etc.)</div>
+                            </div>
+                        </div>
+                        
+                        <div class="arrow">↓</div>
+                        
+                        <div class="pipeline-step">
+                            <div class="pipeline-step-number">5</div>
+                            <div class="pipeline-step-content">
+                                <div class="pipeline-step-title">Low-Pass Filter 2</div>
+                                <div class="pipeline-step-description">Secondary low-pass filtering</div>
+                            </div>
+                        </div>
+                        
+                        <div class="arrow">↓</div>
+                        
+                        <div class="pipeline-step">
+                            <div class="pipeline-step-number">6</div>
+                            <div class="pipeline-step-content">
+                                <div class="pipeline-step-title">Static Notch Filter 1</div>
+                                <div class="pipeline-step-description">Fixed frequency notch filter</div>
+                            </div>
+                        </div>
+                        
+                        <div class="arrow">↓</div>
+                        
+                        <div class="pipeline-step">
+                            <div class="pipeline-step-number">7</div>
+                            <div class="pipeline-step-content">
+                                <div class="pipeline-step-title">Static Notch Filter 2</div>
+                                <div class="pipeline-step-description">Second fixed frequency notch filter</div>
+                            </div>
+                        </div>
+                        
+                        <div class="arrow">↓</div>
+                        
+                        <div class="pipeline-step">
+                            <div class="pipeline-step-number">8</div>
+                            <div class="pipeline-step-content">
+                                <div class="pipeline-step-title">Dynamic Notch Filter</div>
+                                <div class="pipeline-step-description">Adaptive notch filters based on FFT analysis</div>
+                            </div>
+                        </div>
+                        
+                        <div class="arrow">↓</div>
+                        
+                        <div class="pipeline-step">
+                            <div class="pipeline-step-number">9</div>
+                            <div class="pipeline-step-content">
+                                <div class="pipeline-step-title">Filtered Output</div>
+                                <div class="pipeline-step-description">Clean signal ready for PID control</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Decimation Filter -->
+            <div class="filter-section">
+                <div class="filter-header" onclick="toggleSection('decimation')">
+                    <h2>🔽 Decimation Filter (Bessel 4th Order)</h2>
+                </div>
+                <div class="filter-content" id="decimation">
+                    <div class="filter-description">
+                        The decimation filter is a Bessel 4th order low-pass filter used to downsample the gyro signal. 
+                        It consists of two cascaded Bessel filters to prevent aliasing during downsampling.
+                    </div>
+                    
+                    <div class="math-formula">
+                        <strong>Bessel 4th Order Transfer Function:</strong><br>
+                        H(s) = H₁(s) × H₂(s)<br>
+                        Where H₁(s) and H₂(s) are 2nd order Bessel filters with Q = 0.8055 and Q = 0.5219 respectively
+                    </div>
+                    
+                    <div class="controls">
+                        <div class="control-group">
+                            <label for="decimation-cutoff">Cutoff Frequency (Hz)</label>
+                            <input type="range" id="decimation-cutoff" min="50" max="500" value="200" step="10">
+                            <span id="decimation-cutoff-value">200 Hz</span>
+                        </div>
+                        <div class="control-group">
+                            <label for="decimation-sample-rate">Sample Rate (Hz)</label>
+                            <input type="range" id="decimation-sample-rate" min="1000" max="8000" value="4000" step="100">
+                            <span id="decimation-sample-rate-value">4000 Hz</span>
+                        </div>
+                    </div>
+                    
+                    <div class="plots-container">
+                        <div class="plot-container">
+                            <div class="plot-title">Frequency Response</div>
+                            <div id="decimation-freq-plot"></div>
+                        </div>
+                        <div class="plot-container">
+                            <div class="plot-title">Step Response</div>
+                            <div id="decimation-step-plot"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- RPM Filter -->
+            <div class="filter-section">
+                <div class="filter-header" onclick="toggleSection('rpm')">
+                    <h2>⚙️ RPM Filter (Dynamic Notch)</h2>
+                </div>
+                <div class="filter-content" id="rpm">
+                    <div class="filter-description">
+                        RPM filters are dynamic notch filters that automatically adjust their center frequency based on motor RPM. 
+                        They target motor-related vibrations that change with throttle.
+                    </div>
+                    
+                    <div class="math-formula">
+                        <strong>RPM to Frequency Conversion:</strong><br>
+                        f = RPM × ratio / 60<br>
+                        Where ratio is typically 1 for 2-blade props, 2 for 4-blade props
+                    </div>
+                    
+                    <div class="controls">
+                        <div class="control-group">
+                            <label for="rpm-motor-rpm">Motor RPM</label>
+                            <input type="range" id="rpm-motor-rpm" min="1000" max="8000" value="4000" step="100">
+                            <span id="rpm-motor-rpm-value">4000 RPM</span>
+                        </div>
+                        <div class="control-group">
+                            <label for="rpm-ratio">Blade Ratio</label>
+                            <select id="rpm-ratio">
+                                <option value="1">2-blade (1:1)</option>
+                                <option value="2">4-blade (2:1)</option>
+                                <option value="3">6-blade (3:1)</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label for="rpm-q">Notch Q</label>
+                            <input type="range" id="rpm-q" min="5" max="50" value="20" step="1">
+                            <span id="rpm-q-value">20</span>
+                        </div>
+                    </div>
+                    
+                    <div class="plots-container">
+                        <div class="plot-container">
+                            <div class="plot-title">Frequency Response</div>
+                            <div id="rpm-freq-plot"></div>
+                        </div>
+                        <div class="plot-container">
+                            <div class="plot-title">Time Domain Response</div>
+                            <div id="rpm-time-plot"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Low-Pass Filters -->
+            <div class="filter-section">
+                <div class="filter-header" onclick="toggleSection('lowpass')">
+                    <h2>📉 Low-Pass Filters (LPF1 & LPF2)</h2>
+                </div>
+                <div class="filter-content" id="lowpass">
+                    <div class="filter-description">
+                        Low-pass filters remove high-frequency noise from the gyro signal. RotorFlight supports multiple filter types 
+                        including PT1, PT2, PT3, Butterworth, Bessel, and Damped filters.
+                    </div>
+                    
+                    <div class="tabs">
+                        <button class="tab active" onclick="switchTab('lpf1')">LPF1 (Primary)</button>
+                        <button class="tab" onclick="switchTab('lpf2')">LPF2 (Secondary)</button>
+                        <button class="tab" onclick="switchTab('comparison')">Comparison</button>
+                    </div>
+                    
+                    <div class="tab-content active" id="lpf1">
+                        <div class="controls">
+                            <div class="control-group">
+                                <label for="lpf1-type">Filter Type</label>
+                                <select id="lpf1-type">
+                                    <option value="PT1">PT1 (First Order)</option>
+                                    <option value="PT2">PT2 (Second Order)</option>
+                                    <option value="PT3">PT3 (Third Order)</option>
+                                    <option value="BUTTER">Butterworth</option>
+                                    <option value="BESSEL">Bessel</option>
+                                    <option value="DAMPED">Damped</option>
+                                </select>
+                            </div>
+                            <div class="control-group">
+                                <label for="lpf1-cutoff">Cutoff Frequency (Hz)</label>
+                                <input type="range" id="lpf1-cutoff" min="50" max="500" value="200" step="10">
+                                <span id="lpf1-cutoff-value">200 Hz</span>
+                            </div>
+                        </div>
+                        
+                        <div class="plots-container">
+                            <div class="plot-container">
+                                <div class="plot-title">LPF1 Frequency Response</div>
+                                <div id="lpf1-freq-plot"></div>
+                            </div>
+                            <div class="plot-container">
+                                <div class="plot-title">LPF1 Step Response</div>
+                                <div id="lpf1-step-plot"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-content" id="lpf2">
+                        <div class="controls">
+                            <div class="control-group">
+                                <label for="lpf2-type">Filter Type</label>
+                                <select id="lpf2-type">
+                                    <option value="PT1">PT1 (First Order)</option>
+                                    <option value="PT2">PT2 (Second Order)</option>
+                                    <option value="PT3">PT3 (Third Order)</option>
+                                    <option value="BUTTER">Butterworth</option>
+                                    <option value="BESSEL">Bessel</option>
+                                    <option value="DAMPED">Damped</option>
+                                </select>
+                            </div>
+                            <div class="control-group">
+                                <label for="lpf2-cutoff">Cutoff Frequency (Hz)</label>
+                                <input type="range" id="lpf2-cutoff" min="50" max="500" value="150" step="10">
+                                <span id="lpf2-cutoff-value">150 Hz</span>
+                            </div>
+                        </div>
+                        
+                        <div class="plots-container">
+                            <div class="plot-container">
+                                <div class="plot-title">LPF2 Frequency Response</div>
+                                <div id="lpf2-freq-plot"></div>
+                            </div>
+                            <div class="plot-container">
+                                <div class="plot-title">LPF2 Step Response</div>
+                                <div id="lpf2-step-plot"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-content" id="comparison">
+                        <div class="comparison-container">
+                            <div class="comparison-plot">
+                                <div class="plot-title">Frequency Response Comparison</div>
+                                <div id="lpf-comparison-freq-plot"></div>
+                            </div>
+                            <div class="comparison-plot">
+                                <div class="plot-title">Step Response Comparison</div>
+                                <div id="lpf-comparison-step-plot"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Static Notch Filters -->
+            <div class="filter-section">
+                <div class="filter-header" onclick="toggleSection('notch')">
+                    <h2>🔽 Static Notch Filters</h2>
+                </div>
+                <div class="filter-content" id="notch">
+                    <div class="filter-description">
+                        Static notch filters remove specific frequency components from the signal. They are useful for eliminating 
+                        known sources of vibration or interference at fixed frequencies.
+                    </div>
+                    
+                    <div class="math-formula">
+                        <strong>Notch Filter Transfer Function:</strong><br>
+                        H(s) = (s² + ω₀²) / (s² + ω₀s/Q + ω₀²)<br>
+                        Where ω₀ = 2πf₀ and Q = f₀/(f₂ - f₁)
+                    </div>
+                    
+                    <div class="tabs">
+                        <button class="tab active" onclick="switchNotchTab('notch1')">Notch Filter 1</button>
+                        <button class="tab" onclick="switchNotchTab('notch2')">Notch Filter 2</button>
+                        <button class="tab" onclick="switchNotchTab('cascaded')">Cascaded Response</button>
+                    </div>
+                    
+                    <div class="tab-content active" id="notch1">
+                        <div class="controls">
+                            <div class="control-group">
+                                <label for="notch1-center">Center Frequency (Hz)</label>
+                                <input type="range" id="notch1-center" min="50" max="400" value="150" step="10">
+                                <span id="notch1-center-value">150 Hz</span>
+                            </div>
+                            <div class="control-group">
+                                <label for="notch1-cutoff">Cutoff Frequency (Hz)</label>
+                                <input type="range" id="notch1-cutoff" min="20" max="200" value="50" step="5">
+                                <span id="notch1-cutoff-value">50 Hz</span>
+                            </div>
+                        </div>
+                        
+                        <div class="plots-container">
+                            <div class="plot-container">
+                                <div class="plot-title">Notch 1 Frequency Response</div>
+                                <div id="notch1-freq-plot"></div>
+                            </div>
+                            <div class="plot-container">
+                                <div class="plot-title">Notch 1 Time Response</div>
+                                <div id="notch1-time-plot"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-content" id="notch2">
+                        <div class="controls">
+                            <div class="control-group">
+                                <label for="notch2-center">Center Frequency (Hz)</label>
+                                <input type="range" id="notch2-center" min="50" max="400" value="250" step="10">
+                                <span id="notch2-center-value">250 Hz</span>
+                            </div>
+                            <div class="control-group">
+                                <label for="notch2-cutoff">Cutoff Frequency (Hz)</label>
+                                <input type="range" id="notch2-cutoff" min="20" max="200" value="80" step="5">
+                                <span id="notch2-cutoff-value">80 Hz</span>
+                            </div>
+                        </div>
+                        
+                        <div class="plots-container">
+                            <div class="plot-container">
+                                <div class="plot-title">Notch 2 Frequency Response</div>
+                                <div id="notch2-freq-plot"></div>
+                            </div>
+                            <div class="plot-container">
+                                <div class="plot-title">Notch 2 Time Response</div>
+                                <div id="notch2-time-plot"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-content" id="cascaded">
+                        <div class="comparison-container">
+                            <div class="comparison-plot">
+                                <div class="plot-title">Cascaded Frequency Response</div>
+                                <div id="notch-cascaded-freq-plot"></div>
+                            </div>
+                            <div class="comparison-plot">
+                                <div class="plot-title">Cascaded Time Response</div>
+                                <div id="notch-cascaded-time-plot"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Dynamic Notch Filter -->
+            <div class="filter-section">
+                <div class="filter-header" onclick="toggleSection('dyn-notch')">
+                    <h2>📊 Dynamic Notch Filter (FFT-based)</h2>
+                </div>
+                <div class="filter-content" id="dyn-notch">
+                    <div class="filter-description">
+                        Dynamic notch filters use FFT analysis to automatically detect and filter out dominant frequency components 
+                        in the gyro signal. They adapt in real-time to changing vibration patterns.
+                    </div>
+                    
+                    <div class="math-formula">
+                        <strong>SDFT (Sliding Discrete Fourier Transform):</strong><br>
+                        X[k] = Σ x[n]e^(-j2πkn/N) for n = 0 to N-1<br>
+                        Peak detection: Find local maxima in frequency spectrum
+                    </div>
+                    
+                    <div class="controls">
+                        <div class="control-group">
+                            <label for="dyn-notch-count">Number of Notches</label>
+                            <input type="range" id="dyn-notch-count" min="1" max="8" value="3" step="1">
+                            <span id="dyn-notch-count-value">3</span>
+                        </div>
+                        <div class="control-group">
+                            <label for="dyn-notch-q">Notch Q</label>
+                            <input type="range" id="dyn-notch-q" min="5" max="50" value="25" step="1">
+                            <span id="dyn-notch-q-value">25</span>
+                        </div>
+                        <div class="control-group">
+                            <label for="dyn-notch-min">Min Frequency (Hz)</label>
+                            <input type="range" id="dyn-notch-min" min="20" max="100" value="60" step="5">
+                            <span id="dyn-notch-min-value">60 Hz</span>
+                        </div>
+                        <div class="control-group">
+                            <label for="dyn-notch-max">Max Frequency (Hz)</label>
+                            <input type="range" id="dyn-notch-max" min="200" max="500" value="300" step="10">
+                            <span id="dyn-notch-max-value">300 Hz</span>
+                        </div>
+                    </div>
+                    
+                    <div class="plots-container">
+                        <div class="plot-container">
+                            <div class="plot-title">FFT Spectrum & Detected Peaks</div>
+                            <div id="dyn-notch-fft-plot"></div>
+                        </div>
+                        <div class="plot-container">
+                            <div class="plot-title">Dynamic Notch Frequency Response</div>
+                            <div id="dyn-notch-freq-plot"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Complete Pipeline Simulation -->
+            <div class="filter-section">
+                <div class="filter-header" onclick="toggleSection('pipeline-sim')">
+                    <h2>🔄 Complete Pipeline Simulation</h2>
+                </div>
+                <div class="filter-content" id="pipeline-sim">
+                    <div class="filter-description">
+                        Simulate the complete gyro filtering pipeline with realistic input signals and see how each filter stage 
+                        affects the signal.
+                    </div>
+                    
+                    <div class="signal-selector">
+                        <button class="signal-btn active" onclick="setInputSignal('noise')">White Noise</button>
+                        <button class="signal-btn" onclick="setInputSignal('step')">Step Response</button>
+                        <button class="signal-btn" onclick="setInputSignal('sine')">Sine Wave</button>
+                        <button class="signal-btn" onclick="setInputSignal('chirp')">Frequency Chirp</button>
+                        <button class="signal-btn" onclick="setInputSignal('realistic')">Realistic Gyro Data</button>
+                    </div>
+                    
+                    <div class="controls">
+                        <div class="control-group">
+                            <label for="pipeline-signal-freq">Signal Frequency (Hz)</label>
+                            <input type="range" id="pipeline-signal-freq" min="10" max="500" value="100" step="10">
+                            <span id="pipeline-signal-freq-value">100 Hz</span>
+                        </div>
+                        <div class="control-group">
+                            <label for="pipeline-noise-level">Noise Level</label>
+                            <input type="range" id="pipeline-noise-level" min="0" max="100" value="30" step="5">
+                            <span id="pipeline-noise-level-value">30%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="plots-container">
+                        <div class="plot-container">
+                            <div class="plot-title">Pipeline Time Domain Response</div>
+                            <div id="pipeline-time-plot"></div>
+                        </div>
+                        <div class="plot-container">
+                            <div class="plot-title">Pipeline Frequency Response</div>
+                            <div id="pipeline-freq-plot"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="comparison-container">
+                        <div class="comparison-plot">
+                            <div class="plot-title">Before vs After Filtering</div>
+                            <div id="pipeline-comparison-plot"></div>
+                        </div>
+                        <div class="comparison-plot">
+                            <div class="plot-title">Filter Stage Contributions</div>
+                            <div id="pipeline-stages-plot"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentInputSignal = 'noise';
+        let sampleRate = 4000;
+        let timePoints = 1000;
+        
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeControls();
+            updateAllPlots();
+        });
+        
+        function initializeControls() {
+            // Add event listeners for all controls
+            const controls = document.querySelectorAll('input[type="range"], select');
+            controls.forEach(control => {
+                control.addEventListener('input', updateAllPlots);
+                control.addEventListener('change', updateAllPlots);
+            });
+        }
+        
+        function toggleSection(sectionId) {
+            const content = document.getElementById(sectionId);
+            content.classList.toggle('active');
+            if (content.classList.contains('active')) {
+                updateAllPlots();
+            }
+        }
+        
+        function switchTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+            
+            updateAllPlots();
+        }
+        
+        function switchNotchTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('#notch .tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('#notch .tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+            
+            updateAllPlots();
+        }
+        
+        function setInputSignal(signalType) {
+            currentInputSignal = signalType;
+            
+            // Update button states
+            document.querySelectorAll('.signal-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            updateAllPlots();
+        }
+        
+        function updateAllPlots() {
+            updateControlValues();
+            
+            // Update plots for active sections
+            if (document.getElementById('decimation').classList.contains('active')) {
+                updateDecimationPlots();
+            }
+            if (document.getElementById('rpm').classList.contains('active')) {
+                updateRpmPlots();
+            }
+            if (document.getElementById('lowpass').classList.contains('active')) {
+                updateLowpassPlots();
+            }
+            if (document.getElementById('notch').classList.contains('active')) {
+                updateNotchPlots();
+            }
+            if (document.getElementById('dyn-notch').classList.contains('active')) {
+                updateDynNotchPlots();
+            }
+            if (document.getElementById('pipeline-sim').classList.contains('active')) {
+                updatePipelinePlots();
+            }
+        }
+        
+        function updateControlValues() {
+            // Update all range input value displays
+            const ranges = document.querySelectorAll('input[type="range"]');
+            ranges.forEach(range => {
+                const valueSpan = document.getElementById(range.id + '-value');
+                if (valueSpan) {
+                    if (range.id.includes('cutoff') || range.id.includes('center') || range.id.includes('freq')) {
+                        valueSpan.textContent = range.value + ' Hz';
+                    } else if (range.id.includes('rpm')) {
+                        valueSpan.textContent = range.value + ' RPM';
+                    } else if (range.id.includes('level')) {
+                        valueSpan.textContent = range.value + '%';
+                    } else {
+                        valueSpan.textContent = range.value;
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
