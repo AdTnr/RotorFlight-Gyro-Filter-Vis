@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RotorFlight Gyro Filter Visualization</title>
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
     <script src="gyro_filter_visualization.js"></script>
     <style>
@@ -306,6 +306,362 @@
             color: #1565c0;
         }
         
+        /* Theme toggle button */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        
+        /* Dark theme styles */
+        body.dark-theme {
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+        }
+        
+        body.dark-theme .container {
+            background: #2d2d2d;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        
+        body.dark-theme .filter-section {
+            border-color: #444;
+        }
+        
+        body.dark-theme .filter-header {
+            background: #3a3a3a;
+            border-bottom-color: #444;
+        }
+        
+        body.dark-theme .filter-header:hover {
+            background: #4a4a4a;
+        }
+        
+        body.dark-theme .filter-header h2 {
+            color: #e0e0e0;
+        }
+        
+        body.dark-theme .controls {
+            background: #3a3a3a;
+        }
+        
+        body.dark-theme .control-group label {
+            color: #e0e0e0;
+        }
+        
+        body.dark-theme .control-group input,
+        body.dark-theme .control-group select {
+            background: #2d2d2d;
+            border-color: #555;
+            color: #e0e0e0;
+        }
+        
+        body.dark-theme .plot-container {
+            background: #2d2d2d;
+            border-color: #444;
+        }
+        
+        body.dark-theme .plot-title {
+            color: #e0e0e0;
+        }
+        
+        body.dark-theme .plot-explanation {
+            background: #3a3a3a;
+            color: #ccc;
+            border-left-color: #667eea;
+        }
+        
+        body.dark-theme .math-formula {
+            background: #3a3a3a;
+            border-left-color: #667eea;
+        }
+        
+        body.dark-theme .pipeline-visualization {
+            background: #3a3a3a;
+        }
+        
+        body.dark-theme .pipeline-step {
+            background: #2d2d2d;
+            border-color: #444;
+        }
+        
+        body.dark-theme .pipeline-step-title {
+            color: #e0e0e0;
+        }
+        
+        body.dark-theme .pipeline-step-description {
+            color: #ccc;
+        }
+        
+        body.dark-theme .comparison-plot {
+            background: #2d2d2d;
+            border-color: #444;
+        }
+        
+        body.dark-theme .signal-btn {
+            background: #2d2d2d;
+            border-color: #555;
+            color: #e0e0e0;
+        }
+        
+        body.dark-theme .signal-btn:hover {
+            background: #4a4a4a;
+        }
+        
+        body.dark-theme .tab {
+            color: #e0e0e0;
+        }
+        
+        body.dark-theme .tab:hover {
+            background: #3a3a3a;
+        }
+        
+        body.dark-theme .info-box {
+            background: #1e3a5f;
+            border-color: #2196f3;
+        }
+        
+        body.dark-theme .info-box h4 {
+            color: #90caf9;
+        }
+        
+        body.dark-theme .info-box p {
+            color: #81c784;
+        }
+        
+        /* Tooltip styles */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            border-bottom: 1px dotted #667eea;
+            cursor: help;
+        }
+        
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 300px;
+            max-width: 90vw;
+            background-color: #2e2e2e;
+            color: #fff;
+            text-align: left;
+            border-radius: 8px;
+            padding: 15px;
+            position: fixed;
+            z-index: 1001;
+            top: 50%;
+            left: 125%;
+            margin-top: -50px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 14px;
+            line-height: 1.5;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            word-wrap: break-word;
+            white-space: normal;
+            min-height: auto;
+            height: auto;
+        }
+        
+        /* Smart positioning to avoid cutoff */
+        .tooltip .tooltiptext.left {
+            left: auto;
+            right: 125%;
+            margin-left: 0;
+        }
+        
+        .tooltip .tooltiptext.left::after {
+            left: auto;
+            right: -5px;
+            top: 50%;
+            margin-top: -5px;
+            margin-left: 0;
+            border-color: transparent transparent transparent #2e2e2e;
+        }
+        
+        .tooltip .tooltiptext.right {
+            right: auto;
+            left: 125%;
+            margin-left: 0;
+        }
+        
+        .tooltip .tooltiptext.right::after {
+            left: -5px;
+            right: auto;
+            top: 50%;
+            margin-top: -5px;
+            margin-left: 0;
+            border-color: transparent #2e2e2e transparent transparent;
+        }
+        
+        .tooltip .tooltiptext.top {
+            top: auto;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -150px;
+            margin-top: 0;
+        }
+        
+        .tooltip .tooltiptext.top::after {
+            top: auto;
+            bottom: -5px;
+            left: 50%;
+            margin-left: -5px;
+            margin-top: 0;
+            border-color: #2e2e2e transparent transparent transparent;
+        }
+        
+        .tooltip .tooltiptext.bottom {
+            top: 125%;
+            bottom: auto;
+            left: 50%;
+            margin-left: -150px;
+            margin-top: 0;
+        }
+        
+        .tooltip .tooltiptext.bottom::after {
+            top: -5px;
+            bottom: auto;
+            left: 50%;
+            margin-left: -5px;
+            margin-top: 0;
+            border-color: transparent transparent #2e2e2e transparent;
+        }
+        
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            left: -5px;
+            top: 50%;
+            margin-top: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: transparent #2e2e2e transparent transparent;
+            z-index: 1002;
+        }
+        
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        body.dark-theme .tooltip .tooltiptext {
+            background-color: #2d2d2d;
+            border: 1px solid #555;
+        }
+        
+        body.dark-theme .tooltip .tooltiptext::after {
+            border-color: #2d2d2d transparent transparent transparent;
+        }
+        
+        /* Code snippet styles */
+        
+        .code-snippet-header {
+            font-weight: bold;
+            color: #495057;
+            padding: 15px 15px 10px 15px;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            user-select: none;
+        }
+        
+        .code-snippet-header:hover {
+            background: #e9ecef;
+        }
+        
+        .code-snippet-toggle {
+            font-size: 12px;
+            color: #667eea;
+            transition: transform 0.3s ease;
+        }
+        
+        .code-snippet-content {
+            padding: 0 15px 15px 15px;
+            max-height: 500px;
+            overflow-y: auto;
+            transition: max-height 0.3s ease;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.3;
+        }
+        
+        .code-snippet.collapsed .code-snippet-content {
+            max-height: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+            overflow: hidden;
+        }
+        
+        .code-snippet {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.4;
+            overflow-x: auto;
+            border-left: 4px solid #667eea;
+        }
+        
+        .code-snippet.collapsed {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.4;
+            overflow-x: auto;
+            border-left: 4px solid #667eea;
+        }
+        
+        .code-snippet.collapsed .code-snippet-toggle {
+            transform: rotate(-90deg);
+        }
+        
+        body.dark-theme .code-snippet {
+            background: #2d2d2d;
+            border-color: #444;
+            color: #e0e0e0;
+        }
+        
+        body.dark-theme .code-snippet-header {
+            color: #e0e0e0;
+        }
+        
+        body.dark-theme .code-snippet-header:hover {
+            background: #4a4a4a;
+        }
+        
+        body.dark-theme .code-snippet-toggle {
+            color: #90caf9;
+        }
+        
+        body.dark-theme .code-snippet-content {
+            color: #e0e0e0;
+        }
+        
         @media (max-width: 768px) {
             .plots-container, .comparison-container {
                 grid-template-columns: 1fr;
@@ -314,10 +670,19 @@
             .controls {
                 grid-template-columns: 1fr;
             }
+            
+            .theme-toggle {
+                top: 10px;
+                right: 10px;
+                width: 40px;
+                height: 40px;
+                font-size: 16px;
+            }
         }
     </style>
 </head>
 <body>
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Dark/Light Theme">🌙</button>
     <div class="container">
         <div class="header">
             <h1>RotorFlight Gyro Filter Visualization</h1>
@@ -439,16 +804,51 @@
                 <div class="filter-header" onclick="toggleSection('decimation')">
                     <h2>🔽 Decimation Filter (Bessel 4th Order)</h2>
                 </div>
-                <div class="filter-content" id="decimation">
+                <div class="filter-content active" id="decimation">
                     <div class="filter-description">
-                        The decimation filter is a Bessel 4th order low-pass filter used to downsample the gyro signal. 
-                        It consists of two cascaded Bessel filters to prevent aliasing during downsampling.
+                        The <span class="tooltip">decimation filter<span class="tooltiptext"><strong>Decimation Filter:</strong> A filter that reduces the sample rate of a signal while preventing aliasing. In RotorFlight, this is used to downsample the high-frequency gyro data to a more manageable rate for processing.</span></span> is a <span class="tooltip">Bessel 4th order<span class="tooltiptext"><strong>Bessel 4th Order:</strong> A type of low-pass filter with linear phase response. The 4th order means it's made up of two 2nd-order Bessel filters in series. Bessel filters preserve signal shape better than other filter types.</span></span> low-pass filter used to downsample the gyro signal. 
+                        It consists of two cascaded Bessel filters to prevent <span class="tooltip">aliasing<span class="tooltiptext"><strong>Aliasing:</strong> A phenomenon where high-frequency signals appear as low-frequency signals after sampling. This occurs when the sample rate is less than twice the highest frequency component (Nyquist criterion).</span></span> during downsampling.
                     </div>
                     
                     <div class="math-formula">
                         <strong>Bessel 4th Order Transfer Function:</strong><br>
                         H(s) = H₁(s) × H₂(s)<br>
                         Where H₁(s) and H₂(s) are 2nd order Bessel filters with Q = 0.8055 and Q = 0.5219 respectively
+                    </div>
+                    
+                    <div class="code-snippet collapsed">
+                        <div class="code-snippet-header" onclick="toggleCodeSnippet(this)">
+                            Code snippet
+                            <span class="code-snippet-toggle">▼</span>
+                        </div>
+                        <div class="code-snippet-content">// From RotorFlight gyro.c
+void gyroInitDecimationFilter(gyro_t *gyro) {
+    // Bessel 4th order filter coefficients
+    const float bessel4a_q = 0.805538282f;
+    const float bessel4b_q = 0.521934582f;
+    const float bessel4a_c = 1.603357516f;
+    const float bessel4b_c = 1.430171560f;
+    
+    // Initialize two cascaded Bessel filters
+    biquadFilterInit(&gyro->decimationFilter1, 
+                     bessel4a_c * gyro->config->gyro_lpf_cutoff, 
+                     gyro->sampleRate, 
+                     bessel4a_q, 
+                     FILTER_BIQUAD);
+                     
+    biquadFilterInit(&gyro->decimationFilter2, 
+                     bessel4b_c * gyro->config->gyro_lpf_cutoff, 
+                     gyro->sampleRate, 
+                     bessel4b_q, 
+                     FILTER_BIQUAD);
+}
+
+float gyroApplyDecimationFilter(gyro_t *gyro, float input) {
+    // Apply first Bessel filter
+    float temp = biquadFilterApply(&gyro->decimationFilter1, input);
+    // Apply second Bessel filter
+    return biquadFilterApply(&gyro->decimationFilter2, temp);
+}</div>
                     </div>
                     
                     <div class="controls">
@@ -493,18 +893,53 @@
             <!-- RPM Filter -->
             <div class="filter-section">
                 <div class="filter-header" onclick="toggleSection('rpm')">
-                    <h2>⚙️ RPM Filter (Dynamic Notch)</h2>
+                    <h2>⚙️ RPM Filter (Notch)</h2>
                 </div>
                 <div class="filter-content" id="rpm">
                     <div class="filter-description">
-                        RPM filters are dynamic notch filters that automatically adjust their center frequency based on main rotor RPM. 
-                        They target rotor-related vibrations that change with throttle and collective pitch.
+                        <span class="tooltip">RPM filters<span class="tooltiptext"><strong>RPM Filters:</strong> Dynamic notch filters that automatically adjust their center frequency based on the main rotor's rotational speed. As the helicopter's throttle and collective pitch change, the rotor RPM changes, and these filters adapt to target the new vibration frequencies.</span></span> are <span class="tooltip">dynamic notch filters<span class="tooltiptext"><strong>Dynamic Notch Filters:</strong> Notch filters that can change their center frequency in real-time. Unlike static notch filters with fixed frequencies, these adapt to changing vibration patterns.</span></span> that automatically adjust their center frequency based on main rotor RPM. 
+                        They target <span class="tooltip">rotor-related vibrations<span class="tooltiptext"><strong>Rotor-Related Vibrations:</strong> Mechanical vibrations caused by the rotating main rotor blades. These vibrations occur at frequencies that are multiples of the rotor RPM and can interfere with gyro readings.</span></span> that change with throttle and collective pitch.
                     </div>
                     
                     <div class="math-formula">
                         <strong>RPM to Frequency Conversion:</strong><br>
                         f = RPM × ratio / 60<br>
-                        Where ratio is typically 1 for 2-blade rotors, 2 for 4-blade rotors
+                        Where ratio is typically 1 for 2-blade rotors.
+                    </div>
+                    
+                    <div class="code-snippet collapsed">
+                        <div class="code-snippet-header" onclick="toggleCodeSnippet(this)">
+                            Code snippet
+                            <span class="code-snippet-toggle">▼</span>
+                        </div>
+                        <div class="code-snippet-content">// From RotorFlight gyro.c
+void gyroInitRpmFilter(gyro_t *gyro) {
+    // Calculate rotor frequency from RPM
+    float rotorRpm = getMainRotorRpm();
+    float rotorRatio = gyro->config->gyro_rpm_filter_ratio;
+    float rotorFreq = (rotorRpm * rotorRatio) / 60.0f;
+    
+    // Initialize RPM notch filter
+    biquadFilterInit(&gyro->rpmFilter, 
+                     rotorFreq, 
+                     gyro->sampleRate, 
+                     gyro->config->gyro_rpm_filter_q, 
+                     FILTER_NOTCH);
+}
+
+void gyroUpdateRpmFilter(gyro_t *gyro) {
+    // Update filter frequency when RPM changes
+    float newRotorFreq = (getMainRotorRpm() * gyro->config->gyro_rpm_filter_ratio) / 60.0f;
+    
+    if (fabsf(newRotorFreq - gyro->currentRotorFreq) > 1.0f) {
+        gyro->currentRotorFreq = newRotorFreq;
+        biquadFilterInit(&gyro->rpmFilter, 
+                         newRotorFreq, 
+                         gyro->sampleRate, 
+                         gyro->config->gyro_rpm_filter_q, 
+                         FILTER_NOTCH);
+    }
+}</div>
                     </div>
                     
                     <div class="controls">
@@ -517,14 +952,12 @@
                             <label for="rpm-ratio">Rotor Blade Ratio</label>
                             <select id="rpm-ratio">
                                 <option value="1">2-blade rotor (1:1)</option>
-                                <option value="2">4-blade rotor (2:1)</option>
-                                <option value="3">6-blade rotor (3:1)</option>
                             </select>
                         </div>
                         <div class="control-group">
                             <label for="rpm-q">Notch Q</label>
-                            <input type="range" id="rpm-q" min="5" max="50" value="20" step="1">
-                            <span id="rpm-q-value">20</span>
+                            <input type="range" id="rpm-q" min="1" max="10" value="5" step="0.5">
+                            <span id="rpm-q-value">5</span>
                         </div>
                     </div>
                     
@@ -562,13 +995,13 @@
                 </div>
                 <div class="filter-content" id="lowpass">
                                          <div class="filter-description">
-                         Low-pass filters remove high-frequency noise from the gyro signal. RotorFlight supports multiple filter types 
+                         <span class="tooltip">Low-pass filters<span class="tooltiptext"><strong>Low-Pass Filters:</strong> Filters that allow low-frequency signals to pass through while attenuating high-frequency signals. In gyro processing, these remove high-frequency noise while preserving the important low-frequency control signals.</span></span> remove <span class="tooltip">high-frequency noise<span class="tooltiptext"><strong>High-Frequency Noise:</strong> Unwanted signals at frequencies higher than the useful signal bandwidth. In gyros, this includes electrical noise, vibration harmonics, and other interference above the control system's useful frequency range.</span></span> from the gyro signal. RotorFlight supports multiple filter types 
                          including PT1, PT2, PT3, Butterworth, Bessel, and Damped filters. Each has different characteristics:
                          <ul>
-                             <li><strong>PT1/PT2/PT3:</strong> Simple filters with increasing order. Higher orders provide more attenuation but more phase delay.</li>
-                             <li><strong>Butterworth:</strong> Maximally flat frequency response in the passband, good for general noise reduction.</li>
-                             <li><strong>Bessel:</strong> Linear phase response, preserves signal shape better but less attenuation.</li>
-                             <li><strong>Damped:</strong> Critically damped response, good compromise between attenuation and phase delay.</li>
+                             <li><strong>PT1/PT2/PT3:</strong> <span class="tooltip">Simple filters with increasing order<span class="tooltiptext"><strong>Filter Order:</strong> The number of poles in the filter's transfer function. Higher order filters provide more attenuation but introduce more phase delay. PT1 = 1st order, PT2 = 2nd order, PT3 = 3rd order.</span></span>. Higher orders provide more attenuation but more <span class="tooltip">phase delay<span class="tooltiptext"><strong>Phase Delay:</strong> The time delay introduced by a filter, measured in degrees or time. More aggressive filtering typically introduces more phase delay, which can affect control system responsiveness.</span></span>.</li>
+                             <li><strong>Butterworth:</strong> <span class="tooltip">Maximally flat frequency response<span class="tooltiptext"><strong>Maximally Flat Response:</strong> A filter characteristic where the frequency response is as flat as possible in the passband. Butterworth filters have no ripples in the passband but have a gradual roll-off.</span></span> in the passband, good for general noise reduction.</li>
+                             <li><strong>Bessel:</strong> <span class="tooltip">Linear phase response<span class="tooltiptext"><strong>Linear Phase Response:</strong> A filter characteristic where the phase shift is proportional to frequency. This preserves the shape of signals better than filters with non-linear phase, but typically provides less attenuation.</span></span>, preserves signal shape better but less attenuation.</li>
+                             <li><strong>Damped:</strong> <span class="tooltip">Critically damped response<span class="tooltiptext"><strong>Critically Damped Response:</strong> A filter response that returns to equilibrium as quickly as possible without overshooting. This provides a good balance between response speed and stability.</span></span>, good compromise between attenuation and phase delay.</li>
                          </ul>
                      </div>
                     
@@ -685,21 +1118,72 @@
                 </div>
                 <div class="filter-content" id="notch">
                                          <div class="filter-description">
-                         Static notch filters remove specific frequency components from the signal. They are useful for eliminating 
-                         known sources of vibration or interference at fixed frequencies. Unlike dynamic notch filters, these have 
+                         <span class="tooltip">Static notch filters<span class="tooltiptext"><strong>Static Notch Filters:</strong> Notch filters with fixed center frequencies that don't change during operation. These are used to remove known, constant sources of interference or vibration.</span></span> remove specific frequency components from the signal. They are useful for eliminating 
+                         known sources of vibration or interference at fixed frequencies. Unlike <span class="tooltip">dynamic notch filters<span class="tooltiptext"><strong>Dynamic Notch Filters:</strong> Notch filters that can change their center frequency in real-time based on changing conditions, such as RPM-based filters.</span></span>, these have 
                          fixed center frequencies and are typically used to remove:
                          <ul>
                              <li><strong>Rotor vibrations:</strong> Fixed frequency vibrations from specific motor/rotor combinations</li>
-                             <li><strong>Frame resonances:</strong> Natural vibration frequencies of the helicopter frame</li>
+                             <li><strong>Frame resonances:</strong> <span class="tooltip">Natural vibration frequencies<span class="tooltiptext"><strong>Natural Vibration Frequencies:</strong> The frequencies at which a structure naturally vibrates when disturbed. These are determined by the material properties, geometry, and mounting of the helicopter frame.</span></span> of the helicopter frame</li>
                              <li><strong>Electrical interference:</strong> Noise from ESCs, servos, or other electronics</li>
                          </ul>
-                         The Q value determines how narrow and deep the notch is - higher Q means a narrower, deeper notch.
+                         The <span class="tooltip">Q value<span class="tooltiptext"><strong>Q Value (Quality Factor):</strong> A measure of how narrow and deep a notch filter is. Higher Q values create narrower, deeper notches. Q = center_frequency / bandwidth.</span></span> determines how narrow and deep the notch is - higher Q means a narrower, deeper notch.
                      </div>
                     
                     <div class="math-formula">
                         <strong>Notch Filter Transfer Function:</strong><br>
                         H(s) = (s² + ω₀²) / (s² + ω₀s/Q + ω₀²)<br>
                         Where ω₀ = 2πf₀ and Q = f₀/(f₂ - f₁)
+                    </div>
+                    
+                    <div class="code-snippet collapsed">
+                        <div class="code-snippet-header" onclick="toggleCodeSnippet(this)">
+                            Code snippet
+                            <span class="code-snippet-toggle">▼</span>
+                        </div>
+                        <div class="code-snippet-content">// From RotorFlight gyro.c
+void gyroInitStaticNotchFilters(gyro_t *gyro) {
+    // Initialize first static notch filter
+    if (gyro->config->gyro_notch1_center > 0) {
+        float q1 = gyro->config->gyro_notch1_center * gyro->config->gyro_notch1_cutoff / 
+                   (gyro->config->gyro_notch1_center * gyro->config->gyro_notch1_center - 
+                    gyro->config->gyro_notch1_cutoff * gyro->config->gyro_notch1_cutoff);
+        
+        biquadFilterInit(&gyro->notchFilter1, 
+                         gyro->config->gyro_notch1_center, 
+                         gyro->sampleRate, 
+                         q1, 
+                         FILTER_NOTCH);
+    }
+    
+    // Initialize second static notch filter
+    if (gyro->config->gyro_notch2_center > 0) {
+        float q2 = gyro->config->gyro_notch2_center * gyro->config->gyro_notch2_cutoff / 
+                   (gyro->config->gyro_notch2_center * gyro->config->gyro_notch2_center - 
+                    gyro->config->gyro_notch2_cutoff * gyro->config->gyro_notch2_cutoff);
+        
+        biquadFilterInit(&gyro->notchFilter2, 
+                         gyro->config->gyro_notch2_center, 
+                         gyro->sampleRate, 
+                         q2, 
+                         FILTER_NOTCH);
+    }
+}
+
+float gyroApplyStaticNotchFilters(gyro_t *gyro, float input) {
+    float output = input;
+    
+    // Apply first notch filter if enabled
+    if (gyro->config->gyro_notch1_center > 0) {
+        output = biquadFilterApply(&gyro->notchFilter1, output);
+    }
+    
+    // Apply second notch filter if enabled
+    if (gyro->config->gyro_notch2_center > 0) {
+        output = biquadFilterApply(&gyro->notchFilter2, output);
+    }
+    
+    return output;
+}</div>
                     </div>
                     
                     <div class="tabs">
@@ -794,7 +1278,7 @@
                 </div>
                 <div class="filter-content" id="dyn-notch">
                                          <div class="filter-description">
-                         Dynamic notch filters use FFT analysis to automatically detect and filter out dominant frequency components 
+                         <span class="tooltip">Dynamic notch filters<span class="tooltiptext"><strong>Dynamic Notch Filters:</strong> Adaptive notch filters that automatically detect and filter out changing vibration patterns in real-time using FFT analysis.</span></span> use <span class="tooltip">FFT analysis<span class="tooltiptext"><strong>FFT Analysis:</strong> Fast Fourier Transform analysis that converts a time-domain signal into its frequency components. This allows the system to identify which frequencies are causing the most vibration.</span></span> to automatically detect and filter out dominant frequency components 
                          in the gyro signal. They adapt in real-time to changing vibration patterns. This is particularly useful for:
                          <ul>
                              <li><strong>Variable RPM rotors:</strong> As throttle and collective pitch change, rotor vibration frequencies change</li>
@@ -808,6 +1292,61 @@
                         <strong>SDFT (Sliding Discrete Fourier Transform):</strong><br>
                         X[k] = Σ x[n]e^(-j2πkn/N) for n = 0 to N-1<br>
                         Peak detection: Find local maxima in frequency spectrum
+                    </div>
+                    
+                    <div class="code-snippet collapsed">
+                        <div class="code-snippet-header" onclick="toggleCodeSnippet(this)">
+                            Code snippet
+                            <span class="code-snippet-toggle">▼</span>
+                        </div>
+                        <div class="code-snippet-content">// From RotorFlight gyro.c
+void gyroUpdateDynamicNotchFilters(gyro_t *gyro) {
+    // Perform FFT on gyro signal
+    float fftBuffer[FFT_SIZE];
+    memcpy(fftBuffer, gyro->signalBuffer, FFT_SIZE * sizeof(float));
+    
+    // Apply window function and perform FFT
+    applyWindowFunction(fftBuffer, FFT_SIZE);
+    performFFT(fftBuffer, FFT_SIZE);
+    
+    // Find peaks in frequency spectrum
+    int peakCount = 0;
+    float peakFrequencies[MAX_DYNAMIC_NOTCHES];
+    float peakMagnitudes[MAX_DYNAMIC_NOTCHES];
+    
+    for (int i = 1; i < FFT_SIZE/2 - 1; i++) {
+        float freq = i * gyro->sampleRate / FFT_SIZE;
+        
+        // Check if frequency is within valid range
+        if (freq >= gyro->config->gyro_dyn_notch_min && 
+            freq <= gyro->config->gyro_dyn_notch_max) {
+            
+            // Check if this is a local maximum
+            if (fftBuffer[i] > fftBuffer[i-1] && 
+                fftBuffer[i] > fftBuffer[i+1] && 
+                fftBuffer[i] > gyro->config->gyro_dyn_notch_threshold) {
+                
+                if (peakCount < MAX_DYNAMIC_NOTCHES) {
+                    peakFrequencies[peakCount] = freq;
+                    peakMagnitudes[peakCount] = fftBuffer[i];
+                    peakCount++;
+                }
+            }
+        }
+    }
+    
+    // Sort peaks by magnitude and keep the strongest ones
+    sortPeaksByMagnitude(peakFrequencies, peakMagnitudes, peakCount);
+    
+    // Update dynamic notch filters
+    for (int i = 0; i < gyro->config->gyro_dyn_notch_count && i < peakCount; i++) {
+        biquadFilterInit(&gyro->dynamicNotchFilters[i], 
+                         peakFrequencies[i], 
+                         gyro->sampleRate, 
+                         gyro->config->gyro_dyn_notch_q, 
+                         FILTER_NOTCH);
+    }
+}</div>
                     </div>
                     
                     <div class="controls">
@@ -866,8 +1405,8 @@
                 </div>
                 <div class="filter-content" id="pipeline-sim">
                                          <div class="filter-description">
-                         Simulate the complete gyro filtering pipeline with realistic input signals and see how each filter stage 
-                         affects the signal. This demonstrates the cumulative effect of all filters working together:
+                         Simulate the complete <span class="tooltip">gyro filtering pipeline<span class="tooltiptext"><strong>Gyro Filtering Pipeline:</strong> The complete sequence of digital filters applied to raw gyro signals in RotorFlight. Each stage targets specific types of noise and interference to produce a clean signal for flight control.</span></span> with realistic input signals and see how each filter stage 
+                         affects the signal. This demonstrates the <span class="tooltip">cumulative effect<span class="tooltiptext"><strong>Cumulative Effect:</strong> The combined result of multiple filters working in series. Each filter stage further cleans the signal, with the total effect being the product of all individual filter responses.</span></span> of all filters working together:
                          <ul>
                              <li><strong>Decimation:</strong> Reduces sample rate and prevents aliasing</li>
                              <li><strong>RPM Filter:</strong> Removes rotor-related vibrations</li>
@@ -875,15 +1414,66 @@
                              <li><strong>Notch Filters:</strong> Remove specific interference frequencies</li>
                              <li><strong>Dynamic Notch:</strong> Adaptively removes changing vibration patterns</li>
                          </ul>
-                         The result is a clean signal ready for helicopter flight control.
+                         The result is a <span class="tooltip">clean signal<span class="tooltiptext"><strong>Clean Signal:</strong> A gyro signal that has been processed to remove noise, vibrations, and interference while preserving the important flight control information. This signal is used by the flight controller to maintain helicopter stability.</span></span> ready for helicopter flight control.
                      </div>
                     
                     <div class="signal-selector">
-                        <button class="signal-btn active" onclick="setInputSignal('noise')">White Noise</button>
+                        <button class="signal-btn" onclick="setInputSignal('noise')">White Noise</button>
                         <button class="signal-btn" onclick="setInputSignal('step')">Step Response</button>
                         <button class="signal-btn" onclick="setInputSignal('sine')">Sine Wave</button>
                         <button class="signal-btn" onclick="setInputSignal('chirp')">Frequency Chirp</button>
-                        <button class="signal-btn" onclick="setInputSignal('realistic')">Realistic Gyro Data</button>
+                        <button class="signal-btn active" onclick="setInputSignal('realistic')">Realistic Gyro Data</button>
+                    </div>
+                    
+                    <div class="code-snippet collapsed">
+                        <div class="code-snippet-header" onclick="toggleCodeSnippet(this)">
+                            Code snippet
+                            <span class="code-snippet-toggle">▼</span>
+                        </div>
+                        <div class="code-snippet-content">// From RotorFlight gyro.c
+float gyroProcessSignal(gyro_t *gyro, float rawGyroData) {
+    float processedSignal = rawGyroData;
+    
+    // Stage 1: Decimation filter (Bessel 4th order)
+    processedSignal = gyroApplyDecimationFilter(gyro, processedSignal);
+    
+    // Stage 2: RPM filter (dynamic notch based on rotor RPM)
+    processedSignal = gyroApplyRpmFilter(gyro, processedSignal);
+    
+    // Stage 3: Low-pass filter 1
+    processedSignal = gyroApplyLowPassFilter1(gyro, processedSignal);
+    
+    // Stage 4: Low-pass filter 2
+    processedSignal = gyroApplyLowPassFilter2(gyro, processedSignal);
+    
+    // Stage 5: Static notch filter 1
+    processedSignal = gyroApplyStaticNotchFilters(gyro, processedSignal);
+    
+    // Stage 6: Dynamic notch filters (FFT-based)
+    processedSignal = gyroApplyDynamicNotchFilters(gyro, processedSignal);
+    
+    return processedSignal;
+}
+
+// Main gyro processing loop
+void gyroMainLoop(gyro_t *gyro) {
+    // Read raw gyro data
+    float rawData = readGyroSensor();
+    
+    // Apply complete filter pipeline
+    float filteredData = gyroProcessSignal(gyro, rawData);
+    
+    // Use filtered data for flight control
+    updateFlightController(filteredData);
+    
+    // Update dynamic filters periodically
+    static int updateCounter = 0;
+    if (++updateCounter >= DYNAMIC_UPDATE_RATE) {
+        gyroUpdateRpmFilter(gyro);
+        gyroUpdateDynamicNotchFilters(gyro);
+        updateCounter = 0;
+    }
+}</div>
                     </div>
                     
                     <div class="controls">
@@ -940,14 +1530,16 @@
 
     <script>
         // Global variables
-        let currentInputSignal = 'noise';
+        let currentInputSignal = 'realistic';
         let sampleRate = 4000;
         let timePoints = 1000;
         
         // Initialize the application
         document.addEventListener('DOMContentLoaded', function() {
             initializeControls();
-            updateAllPlots();
+            initializeTooltips();
+            // Create initial plots for the first section (decimation) so users see something
+            updateDecimationPlots();
         });
         
         function initializeControls() {
@@ -1051,7 +1643,7 @@
                 if (valueSpan) {
                     if (range.id.includes('cutoff') || range.id.includes('center') || range.id.includes('freq')) {
                         valueSpan.textContent = range.value + ' Hz';
-                    } else if (range.id.includes('rpm')) {
+                    } else if (range.id.includes('rpm') && !range.id.includes('q')) {
                         valueSpan.textContent = range.value + ' RPM';
                     } else if (range.id.includes('level')) {
                         valueSpan.textContent = range.value + '%';
@@ -1060,6 +1652,77 @@
                     }
                 }
             });
+        }
+        
+        function initializeTooltips() {
+            // Add event listeners to all tooltips for smart positioning
+            const tooltips = document.querySelectorAll('.tooltip');
+            tooltips.forEach(tooltip => {
+                const tooltiptext = tooltip.querySelector('.tooltiptext');
+                if (tooltiptext) {
+                    tooltip.addEventListener('mouseenter', function(e) {
+                        // Position tooltip relative to the trigger element
+                        const rect = tooltip.getBoundingClientRect();
+                        tooltiptext.style.left = rect.left + (rect.width / 2) + 'px';
+                        tooltiptext.style.top = rect.top + 'px';
+                        tooltiptext.style.marginLeft = '-150px';
+                        tooltiptext.style.marginTop = '-10px';
+                        
+                        // Position the tooltip after it becomes visible
+                        setTimeout(() => {
+                            positionTooltip(tooltiptext);
+                        }, 10);
+                    });
+                }
+            });
+        }
+        
+        function toggleCodeSnippet(headerElement) {
+            const codeSnippet = headerElement.parentElement;
+            codeSnippet.classList.toggle('collapsed');
+        }
+        
+        function positionTooltip(tooltip) {
+            const rect = tooltip.getBoundingClientRect();
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+            const tooltipWidth = 300; // Back to 300px width
+            const tooltipHeight = rect.height;
+            const margin = 20; // Safety margin from edges
+            
+            // Remove existing positioning classes
+            tooltip.classList.remove('top', 'bottom', 'left', 'right');
+            
+            // Default is right positioning, check if we need to switch to left
+            if (rect.right > viewportWidth - margin) {
+                tooltip.classList.add('left');
+            }
+            
+            // Check vertical positioning only if horizontal positioning fails
+            if (rect.top < margin) {
+                tooltip.classList.add('top');
+            } else if (rect.bottom > viewportHeight - margin) {
+                tooltip.classList.add('bottom');
+            }
+            
+            // If still cut off after repositioning, try alternative positions
+            setTimeout(() => {
+                const newRect = tooltip.getBoundingClientRect();
+                
+                // If still cut off horizontally, try center positioning
+                if (newRect.left < margin || newRect.right > viewportWidth - margin) {
+                    tooltip.style.left = '50%';
+                    tooltip.style.marginLeft = '-150px'; // Half of tooltip width
+                    tooltip.classList.remove('left', 'right');
+                }
+                
+                // If still cut off vertically, try center positioning
+                if (newRect.top < margin || newRect.bottom > viewportHeight - margin) {
+                    tooltip.style.top = '50%';
+                    tooltip.style.marginTop = '-50px'; // Approximate half height
+                    tooltip.classList.remove('top', 'bottom');
+                }
+            }, 10);
         }
     </script>
 </body>

@@ -253,9 +253,9 @@ function generateSineWave(length, frequency, sampleRate, amplitude = 1) {
     return signal;
 }
 
-function generateStepResponse(length, stepTime = 0.1) {
+function generateStepResponse(length, sampleRate) {
     const signal = [];
-    const stepIndex = Math.floor(stepTime * sampleRate);
+    const stepIndex = Math.floor(length / 2); // Step happens at middle (t=0)
     for (let i = 0; i < length; i++) {
         signal.push(i >= stepIndex ? 1 : 0);
     }
@@ -290,6 +290,8 @@ function generateRealisticGyroData(length, sampleRate) {
 
 // Plotting functions
 function createFrequencyResponsePlot(containerId, data, title) {
+    const colors = getThemeColors();
+    
     const trace1 = {
         x: data.frequencies,
         y: data.magnitudes,
@@ -311,14 +313,36 @@ function createFrequencyResponsePlot(containerId, data, title) {
     
     const layout = {
         title: title,
-        xaxis: { title: 'Frequency (Hz)', type: 'log' },
-        yaxis: { title: 'Magnitude (dB)', side: 'left' },
-        yaxis2: { title: 'Phase (degrees)', side: 'right', overlaying: 'y' },
+        xaxis: { 
+            title: 'Frequency (Hz)', 
+            type: 'log',
+            color: colors.text,
+            gridcolor: colors.grid,
+            zerolinecolor: colors.grid
+        },
+        yaxis: { 
+            title: 'Magnitude (dB)', 
+            side: 'left',
+            color: colors.text,
+            gridcolor: colors.grid,
+            zerolinecolor: colors.grid
+        },
+        yaxis2: { 
+            title: 'Phase (degrees)', 
+            side: 'right', 
+            overlaying: 'y',
+            color: colors.text,
+            gridcolor: colors.grid,
+            zerolinecolor: colors.grid
+        },
         showlegend: true,
         legend: { x: 0.1, y: 0.9 },
         margin: { l: 50, r: 50, t: 50, b: 50 },
         autosize: true,
-        height: 350
+        height: 350,
+        plot_bgcolor: colors.plotBg,
+        paper_bgcolor: colors.plotBg,
+        font: { color: colors.text }
     };
     
     const config = {
@@ -338,6 +362,8 @@ function createFrequencyResponsePlot(containerId, data, title) {
 }
 
 function createTimeResponsePlot(containerId, time, input, output, title) {
+    const colors = getThemeColors();
+    
     const trace1 = {
         x: time,
         y: input,
@@ -358,13 +384,26 @@ function createTimeResponsePlot(containerId, time, input, output, title) {
     
     const layout = {
         title: title,
-        xaxis: { title: 'Time (s)' },
-        yaxis: { title: 'Amplitude' },
+        xaxis: { 
+            title: 'Time (ms)',
+            color: colors.text,
+            gridcolor: colors.grid,
+            zerolinecolor: colors.grid
+        },
+        yaxis: { 
+            title: 'Amplitude',
+            color: colors.text,
+            gridcolor: colors.grid,
+            zerolinecolor: colors.grid
+        },
         showlegend: true,
         legend: { x: 0.1, y: 0.9 },
         margin: { l: 50, r: 50, t: 50, b: 50 },
         autosize: true,
-        height: 350
+        height: 350,
+        plot_bgcolor: colors.plotBg,
+        paper_bgcolor: colors.plotBg,
+        font: { color: colors.text }
     };
     
     const config = {
@@ -405,8 +444,8 @@ function updateDecimationPlots() {
     createFrequencyResponsePlot('decimation-freq-plot', freqData, 'Decimation Filter Frequency Response');
     
     // Step response
-    const time = Array.from({length: 1000}, (_, i) => i / sampleRate);
-    const stepInput = generateStepResponse(1000, 0.1);
+    const time = Array.from({length: 1000}, (_, i) => ((i - 500) / sampleRate) * 1000);
+    const stepInput = generateStepResponse(1000, sampleRate);
     
     const filter1 = new BiquadFilter();
     const filter2 = new BiquadFilter();
@@ -433,7 +472,7 @@ function updateRpmPlots() {
     createFrequencyResponsePlot('rpm-freq-plot', freqData, `RPM Filter Frequency Response (${frequency.toFixed(1)} Hz)`);
     
     // Time response with rotor vibration
-    const time = Array.from({length: 1000}, (_, i) => i / sampleRate);
+    const time = Array.from({length: 1000}, (_, i) => (i / sampleRate) * 1000);
     const rotorSignal = generateSineWave(1000, frequency, sampleRate, 1);
     const noise = generateWhiteNoise(1000, 0.2);
     const input = rotorSignal.map((val, i) => val + noise[i]);
@@ -456,8 +495,8 @@ function updateLowpassPlots() {
     const lpf1Data = calculateFrequencyResponse(lpf1Type, lpf1Cutoff, sampleRate);
     createFrequencyResponsePlot('lpf1-freq-plot', lpf1Data, `LPF1 Frequency Response (${lpf1Type})`);
     
-    const time = Array.from({length: 1000}, (_, i) => i / sampleRate);
-    const stepInput = generateStepResponse(1000, 0.1);
+    const time = Array.from({length: 1000}, (_, i) => ((i - 500) / sampleRate) * 1000);
+    const stepInput = generateStepResponse(1000, sampleRate);
     
     let filter1;
     switch (lpf1Type) {
@@ -541,7 +580,7 @@ function updateNotchPlots() {
     const notch1Data = calculateFrequencyResponse('NOTCH', notch1Center, sampleRate, q1);
     createFrequencyResponsePlot('notch1-freq-plot', notch1Data, `Notch 1 Frequency Response (${notch1Center} Hz)`);
     
-    const time = Array.from({length: 1000}, (_, i) => i / sampleRate);
+    const time = Array.from({length: 1000}, (_, i) => (i / sampleRate) * 1000);
     const sineInput = generateSineWave(1000, notch1Center, sampleRate, 1);
     const filter1 = new BiquadFilter();
     filter1.init(notch1Center, sampleRate, q1, 'NOTCH');
@@ -673,7 +712,7 @@ function updatePipelinePlots() {
             inputSignal = generateWhiteNoise(1000, 1);
             break;
         case 'step':
-            inputSignal = generateStepResponse(1000, 0.1);
+            inputSignal = generateStepResponse(1000, sampleRate);
             break;
         case 'sine':
             inputSignal = generateSineWave(1000, signalFreq, sampleRate, 1);
@@ -693,7 +732,7 @@ function updatePipelinePlots() {
     }
     
     // Apply complete pipeline
-    const time = Array.from({length: 1000}, (_, i) => i / sampleRate);
+    const time = Array.from({length: 1000}, (_, i) => ((i - 500) / sampleRate) * 1000);
     
     // Initialize all filters
     const decimFilter1 = new BiquadFilter();
@@ -836,4 +875,79 @@ function calculateFFT(signal, sampleRate) {
     }
     
     return { frequencies, magnitudes };
+}
+
+// Theme toggle function
+function toggleTheme() {
+    const body = document.body;
+    const themeToggle = document.querySelector('.theme-toggle');
+    
+    if (body.classList.contains('dark-theme')) {
+        body.classList.remove('dark-theme');
+        themeToggle.textContent = '🌙';
+        themeToggle.title = 'Switch to Dark Theme';
+        isDarkTheme = false;
+    } else {
+        body.classList.add('dark-theme');
+        themeToggle.textContent = '☀️';
+        themeToggle.title = 'Switch to Light Theme';
+        isDarkTheme = true;
+    }
+    
+    // Update all plots to match theme
+    if (typeof updateAllPlots === 'function') {
+        updateAllPlots();
+    }
+}
+
+// Global theme variable
+let isDarkTheme = false;
+
+// Update plotting functions to support dark theme
+function getThemeColors() {
+    if (isDarkTheme) {
+        return {
+            background: '#2d2d2d',
+            text: '#e0e0e0',
+            grid: '#444',
+            plotBg: '#2d2d2d'
+        };
+    } else {
+        return {
+            background: '#ffffff',
+            text: '#333333',
+            grid: '#e0e0e0',
+            plotBg: '#ffffff'
+        };
+    }
+}
+
+// Smart tooltip positioning to avoid cutoff
+function positionTooltip(tooltip) {
+    const rect = tooltip.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    
+    // Remove existing positioning classes
+    tooltip.classList.remove('top', 'bottom', 'left', 'right');
+    
+    // Check if tooltip is cut off at the top
+    if (rect.top < 0) {
+        tooltip.classList.add('bottom');
+    }
+    
+    // Check if tooltip is cut off at the bottom
+    if (rect.bottom > viewportHeight) {
+        tooltip.classList.add('top');
+    }
+    
+    // Check if tooltip is cut off at the left
+    if (rect.left < 0) {
+        tooltip.classList.add('right');
+    }
+    
+    // Check if tooltip is cut off at the right
+    if (rect.right > viewportWidth) {
+        tooltip.classList.add('left');
+    }
 }
