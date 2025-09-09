@@ -686,8 +686,8 @@
     <div class="container">
         <div class="header">
             <h1>RotorFlight Gyro Filter Visualization</h1>
-            <p>Educational demonstration of digital filters used in helicopter flight controller gyro processing</p>
-            <p>Built by <a href="https://www.facebook.com/profile.php?id=100080022445852" target="_blank">Adam Turner</a> and based on RotorFlight firmware gyro signal processing code.</p>
+            <p>Educational demonstration of digital filters used in the RotorFlight helicopter flight controller, gyro processing</p>
+            <p>Built by <a href="https://www.facebook.com/profile.php?id=100080022445852" target="_blank">Adam Turner</a> and based on RotorFlight firmware gyro signal processing code firmware version 4.5.1</p>
         </div>
         
         <div class="content">
@@ -722,7 +722,7 @@
                             <div class="pipeline-step-number">2</div>
                             <div class="pipeline-step-content">
                                 <div class="pipeline-step-title">Decimation Filter</div>
-                                <div class="pipeline-step-description">Bessel 4th order filter for downsampling</div>
+                                <div class="pipeline-step-description">This is a fundamental part of the gyro signal processing pipeline in RotorFlight, not an optional filter that can be disabled through the configurator. It is a Bessel 4th order filter for downsampling controlled by .</div>
                             </div>
                         </div>
                         
@@ -802,12 +802,12 @@
             <!-- Decimation Filter -->
             <div class="filter-section">
                 <div class="filter-header" onclick="toggleSection('decimation')">
-                    <h2>🔽 Decimation Filter (Bessel 4th Order)</h2>
+                    <h2>🔽 Fundamental Decimation Filter </h2>
                 </div>
                 <div class="filter-content active" id="decimation">
                     <div class="filter-description">
-                        The <span class="tooltip">decimation filter<span class="tooltiptext"><strong>Decimation Filter:</strong> A filter that reduces the sample rate of a signal while preventing aliasing. In RotorFlight, this is used to downsample the high-frequency gyro data to a more manageable rate for processing.</span></span> is a <span class="tooltip">Bessel 4th order<span class="tooltiptext"><strong>Bessel 4th Order:</strong> A type of low-pass filter with linear phase response. The 4th order means it's made up of two 2nd-order Bessel filters in series. Bessel filters preserve signal shape better than other filter types.</span></span> low-pass filter used to downsample the gyro signal. 
-                        It consists of two cascaded Bessel filters to prevent <span class="tooltip">aliasing<span class="tooltiptext"><strong>Aliasing:</strong> A phenomenon where high-frequency signals appear as low-frequency signals after sampling. This occurs when the sample rate is less than twice the highest frequency component (Nyquist criterion).</span></span> during downsampling.
+                        The <span class="tooltip">decimation filter<span class="tooltiptext"><strong>Decimation Filter:</strong> The decimation filter is a fundamental part of the gyro signal processing pipeline in RotorFlight, not an optional filter that can be disabled through the configurator. It is a filter that reduces the sample rate of a signal while preventing aliasing. In RotorFlight, this is used to downsample the high-frequency gyro data to a more manageable rate for processing.</span></span> is a <span class="tooltip">Bessel 4th order<span class="tooltiptext"><strong>Bessel 4th Order:</strong> A type of low-pass filter with linear phase response. The 4th order means it's made up of two 2nd-order Bessel filters in series. Bessel filters preserve signal shape better than other filter types.</span></span> low-pass filter used to downsample the gyro signal. 
+                        It consists of two cascaded Bessel filters to prevent <span class="tooltip">aliasing<span class="tooltiptext"><strong>Aliasing:</strong> A phenomenon where high-frequency signals appear as low-frequency signals after sampling. This occurs when the sample rate is less than twice the highest frequency component (Nyquist criterion).</span></span> during downsampling. The cutoff frequency is controlled by the gyro_lpf_cutoff parameter control in the configurator <strong>even if the LPF filter is disabled.</strong>
                     </div>
                     
                     <div class="math-formula">
